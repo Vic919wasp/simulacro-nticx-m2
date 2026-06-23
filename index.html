@@ -968,28 +968,102 @@ async function loadDocente(){
     if(data.error){renderDocenteLogin();document.getElementById('doc-err').style.display='block';return;}
     const puntajes=(data.puntajes||[]).slice(1);
     const usuarios=(data.usuarios||[]).slice(1);
-    const alumnos=new Set(puntajes.map(r=>r[0])).size;
-    const total=puntajes.length;
-    const avg=total?Math.round(puntajes.reduce((s,r)=>s+Number(r[3]),0)/total*10)/10:0;
+
+    // Agrupar por alumno
+    const porAlumno={};
+    puntajes.forEach(r=>{
+      const mail=r[0],nombre=r[1],tema=r[2],pts=Number(r[3]),tot=Number(r[4])||16,fecha=r[5]||'';
+      if(!porAlumno[mail])porAlumno[mail]={nombre,mail,intentos:[],mejores:{}};
+      porAlumno[mail].intentos.push({tema,pts,tot,fecha,pct:Math.round(pts/tot*100)});
+      if(!porAlumno[mail].mejores[tema]||pts>porAlumno[mail].mejores[tema])
+        porAlumno[mail].mejores[tema]=pts;
+    });
+
+    const totalIntentos=puntajes.length;
+    const avgPts=totalIntentos?Math.round(puntajes.reduce((s,r)=>s+Number(r[3]),0)/totalIntentos*10)/10:0;
+
+    // Generar mini sparkline SVG inline
+    function sparkline(intentos){
+      if(intentos.length<2)return'<span style="color:var(--muted);font-size:.7rem">—</span>';
+      const vals=intentos.map(i=>i.pts);
+      const max=Math.max(...vals),min=Math.min(...vals);
+      const w=80,h=28,pad=3;
+      const pts=vals.map((v,i)=>{
+        const x=pad+(i/(vals.length-1))*(w-pad*2);
+        const y=max===min?h/2:pad+(1-(v-min)/(max-min))*(h-pad*2);
+        return`${x},${y}`;
+      }).join(' ');
+      const last=intentos[intentos.length-1].pts;
+      const first=intentos[0].pts;
+      const color=last>=first?'#51d46e':'#ff5a7a';
+      return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible">
+        <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="${pts.split(' ').pop().split(',')[0]}" cy="${pts.split(' ').pop().split(',')[1]}" r="3" fill="${color}"/>
+      </svg>`;
+    }
+
+    // Cards por alumno con historial expandible
+    const alumnosHtml=Object.values(porAlumno).map((a,idx)=>{
+      const mejor=Math.max(...Object.values(a.mejores));
+      const temasOk=Object.keys(a.mejores).length;
+      const promMejor=temasOk?Math.round(Object.values(a.mejores).reduce((s,v)=>s+v,0)/temasOk):0;
+      const evol=sparkline(a.intentos);
+      const histHtml=a.intentos.map(i=>{
+        const c=i.pct>=80?'#51d46e':i.pct>=60?'#ffab2e':'#ff5a7a';
+        return`<tr style="font-size:.78rem">
+          <td style="padding:.3rem .6rem;color:var(--muted)">Tema ${i.tema}</td>
+          <td style="padding:.3rem .6rem;font-family:var(--fh);font-weight:800;color:${c}">${i.pts}/16</td>
+          <td style="padding:.3rem .6rem;color:${c}">${i.pct}%</td>
+          <td style="padding:.3rem .6rem;color:var(--muted)">${i.fecha}</td>
+        </tr>`;
+      }).join('');
+      return`
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:.75rem;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:1rem;padding:.85rem 1rem;cursor:pointer" onclick="toggleAlumno('alm${idx}')">
+            <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--c2),var(--c4));display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0">${a.nombre.charAt(0).toUpperCase()}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-family:var(--fh);font-weight:800;font-size:.9rem">${a.nombre}</div>
+              <div style="font-size:.7rem;color:var(--muted)">${a.mail}</div>
+            </div>
+            <div style="text-align:center;padding:0 .5rem">
+              ${evol}
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-family:var(--fh);font-weight:800;color:var(--c4);font-size:1rem">${promMejor}/16</div>
+              <div style="font-size:.7rem;color:var(--muted)">${temasOk} tema${temasOk!==1?'s':''} · ${a.intentos.length} intentos</div>
+            </div>
+            <div style="color:var(--muted);font-size:.8rem;flex-shrink:0" id="arr${idx}">▼</div>
+          </div>
+          <div id="alm${idx}" style="display:none;border-top:1px solid var(--border);padding:.75rem 1rem">
+            <div style="font-family:var(--fh);font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem">Historial completo</div>
+            <table style="width:100%;border-collapse:collapse">
+              <thead><tr style="font-size:.7rem;color:var(--muted)">
+                <th style="text-align:left;padding:.3rem .6rem;font-family:var(--fh)">Tema</th>
+                <th style="text-align:left;padding:.3rem .6rem;font-family:var(--fh)">Puntaje</th>
+                <th style="text-align:left;padding:.3rem .6rem;font-family:var(--fh)">%</th>
+                <th style="text-align:left;padding:.3rem .6rem;font-family:var(--fh)">Fecha</th>
+              </tr></thead>
+              <tbody>${histHtml}</tbody>
+            </table>
+            <div style="margin-top:.6rem;font-size:.78rem;color:var(--muted)">
+              🏆 Mejor puntaje general: <strong style="color:var(--c4)">${mejor}/16</strong> · 
+              Promedio mejores: <strong style="color:var(--c4)">${promMejor}/16</strong>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
     el.innerHTML=`
       <div class="doc-stat-row">
         <div class="doc-stat"><strong>${usuarios.length}</strong><span>Registrados</span></div>
-        <div class="doc-stat"><strong>${alumnos}</strong><span>Con puntajes</span></div>
-        <div class="doc-stat"><strong>${total}</strong><span>Intentos</span></div>
-        <div class="doc-stat"><strong>${avg}</strong><span>Prom. pts</span></div>
+        <div class="doc-stat"><strong>${Object.keys(porAlumno).length}</strong><span>Con puntajes</span></div>
+        <div class="doc-stat"><strong>${totalIntentos}</strong><span>Intentos</span></div>
+        <div class="doc-stat"><strong>${avgPts}</strong><span>Prom. pts</span></div>
       </div>
-      <div style="font-family:var(--fh);font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">Puntajes</div>
-      <div class="doc-table-wrap">
-        <table class="doc-table">
-          <thead><tr><th>Alumno/a</th><th>Tema</th><th>Puntaje</th><th>%</th><th>Fecha</th></tr></thead>
-          <tbody>${puntajes.map(r=>{
-            const pts=Number(r[3]),tot=Number(r[4])||16;
-            const p=Math.round(pts/tot*100);
-            const c=p>=80?'var(--c3)':p>=60?'var(--c4)':'var(--c5)';
-            return`<tr><td><strong>${r[1]}</strong><br><span style="font-size:.7rem;color:var(--muted)">${r[0]}</span></td><td><strong>Tema ${r[2]}</strong></td><td style="font-family:var(--fh);font-weight:800;color:${c}">${pts}/${tot}</td><td style="color:${c}">${p}%</td><td>${r[5]||'—'}</td></tr>`;
-          }).join('')}</tbody>
-        </table>
+      <div style="font-family:var(--fh);font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">
+        Evolución por alumno <span style="font-weight:400;text-transform:none;font-family:var(--fb)">— click para ver historial</span>
       </div>
+      ${alumnosHtml||'<div class="ranking-empty">📭 Todavía no hay puntajes registrados.</div>'}
       <div style="margin-top:1.25rem;font-family:var(--fh);font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">Usuarios registrados</div>
       <div class="doc-table-wrap">
         <table class="doc-table">
@@ -1001,6 +1075,15 @@ async function loadDocente(){
         <button onclick="renderDocenteLogin()" style="background:var(--card2);border:1px solid var(--border);border-radius:99px;padding:.4rem 1rem;color:var(--muted);font-family:var(--fh);font-size:.75rem;cursor:pointer">🔒 Cerrar sesión docente</button>
       </div>`;
   }catch(e){el.innerHTML='<div class="ranking-empty">⚠️ Error al cargar datos.</div>';}
+}
+
+function toggleAlumno(id){
+  const el=document.getElementById(id);
+  const idx=id.replace('alm','');
+  const arr=document.getElementById('arr'+idx);
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  if(arr)arr.textContent=open?'▲':'▼';
 }
 
 // [009] PRINT / PDF
