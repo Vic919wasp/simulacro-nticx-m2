@@ -654,24 +654,22 @@ async function doRegister(){
   if(!nombre||!mail||!pass){showAuthMsg('Completá todos los campos.','error');return;}
   if(pass.length<4){showAuthMsg('La contraseña debe tener al menos 4 caracteres.','error');return;}
   setAuthLoading(true);
-  // Verificar si el mail ya existe via JSONP (GET)
-  const check=await apiGet({action:'login',mail,pass:'__check__'});
-  if(check.ok){showAuthMsg('El mail ya está registrado. Iniciá sesión.','error');setAuthLoading(false);return;}
-  // Registrar via POST (no-cors, no podemos leer respuesta)
+  // Enviar registro en segundo plano (no-cors)
   apiPost({action:'register',nombre,mail,pass});
-  // Asumir éxito y seguir
+  // Guardar localmente y continuar
   currentUser={nombre,mail};
   localStorage.setItem(LS_USER,JSON.stringify(currentUser));
   localStorage.setItem(LS_AUTH_DONE,'1');
   updateTopbar();
-  showAuthMsg('✅ Cuenta creada. ¡Bienvenido/a, '+nombre+'!','success');
-  await syncAllLocalScores();
+  setAuthLoading(false);
+  showAuthMsg('✅ ¡Bienvenido/a, '+nombre+'!','success');
+  syncAllLocalScores();
   setTimeout(()=>{
     document.getElementById('auth-overlay').classList.remove('open');
     clearAuthMsg();
     pendingScore=null;
     showResult();
-  },1200);
+  },1000);
 }
 
 async function doLogin(){
