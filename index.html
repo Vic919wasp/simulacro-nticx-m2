@@ -1,30 +1,32 @@
 <!--
 ============================================================
-  CONTEXTO: Simulacro de evaluación NTICx 4° Año — Módulo 2 (Julio)
-  Temática: Redes Digitales · Alfabetización Informacional · Agenda Digital
-  9 temas (A–I) · 16 preguntas por tema · ≥3 por submódulo · aleatorio
+  Simulacro NTICx 4° Año — Módulo 2
+  GitHub Pages: vic919wasp.github.io/simulacro-nticx-m2
+  Backend: Google Apps Script (Sheets)
 ============================================================
   ÍNDICE DE NAVEGACIÓN
-  [001] HEAD / META                     - línea 17
-  [002] ESTILOS CSS                     - línea 24
-  [003] ESTRUCTURA HTML (PANTALLAS)     - línea 245
-  [004] BANCO DE PREGUNTAS (JS)         - línea 379
-  [005] LÓGICA DEL QUIZ (JS)            - línea 821
-  [006] RENDER HOME / QUIZ / RESULTADO  - línea 873
-  [007] PRINT / PDF                     - línea 988
-  [008] INICIALIZACIÓN                  - línea 1074
+  [001] HEAD / META                     - línea 18
+  [002] ESTILOS CSS                     - línea 25
+  [003] HTML — PANTALLAS                - línea 310
+  [004] BANCO DE PREGUNTAS              - línea 400
+  [005] CONFIG BACKEND                  - línea 415
+  [006] AUTH LOGIC (registro/login)     - línea 430
+  [007] QUIZ LOGIC                      - línea 560
+  [008] RANKING LOGIC                   - línea 720
+  [009] PRINT / PDF                     - línea 820
+  [010] NAVEGACIÓN / INIT               - línea 880
 ============================================================
 -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<!-- [001] HEAD / META -->
+<!-- [001] HEAD -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Simulacro NTICx 4° Año — Módulo 2</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
-<!-- [002] ESTILOS CSS -->
+<!-- [002] ESTILOS -->
 <style>
 :root{
   --bg:#0b0b12;--surface:#14141f;--card:#1e1e2e;--card2:#252538;
@@ -36,29 +38,37 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.6;min-height:100vh}
+.screen{display:none}.screen.active{display:block}
 
-/* ── SCREEN SYSTEM ── */
-.screen{display:none}
-.screen.active{display:block}
+/* ── TOPBAR ── */
+.user-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.6rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.user-info{display:flex;align-items:center;gap:.6rem}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--c2),var(--c4));display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0}
+.user-name{font-family:var(--fh);font-weight:700;font-size:.88rem}
+.user-mail{font-size:.72rem;color:var(--muted)}
+.topbar-btns{display:flex;gap:.5rem}
+.tb-btn{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:.35rem .85rem;font-size:.75rem;font-weight:700;color:var(--text);cursor:pointer;font-family:var(--fh);transition:all .2s}
+.tb-btn:hover{background:var(--card2)}
+.tb-btn.ranking{color:var(--c4);border-color:rgba(255,171,46,.3)}
+.tb-btn.logout{color:var(--c5);border-color:rgba(255,90,122,.2)}
+.tb-btn.login-cta{color:var(--c2);border-color:rgba(139,109,255,.3)}
 
 /* ── HOME ── */
 .home-wrap{max-width:860px;margin:0 auto;padding:2rem 1rem 4rem}
-.home-hero{text-align:center;padding:3rem 1rem 2rem}
+.home-hero{text-align:center;padding:2.5rem 1rem 1.5rem}
 .home-hero h1{font-family:var(--fh);font-size:2.2rem;font-weight:800;letter-spacing:-.04em;margin-bottom:.5rem}
 .home-hero h1 span{color:var(--c4)}
-.home-hero p{color:var(--muted);font-size:.95rem;max-width:520px;margin:0 auto 2rem}
-.rules-bar{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem}
-.rule-chip{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:.45rem 1rem;font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:.4rem}
+.home-hero p{color:var(--muted);font-size:.95rem;max-width:520px;margin:0 auto 1.5rem}
+.rules-bar{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem}
+.rule-chip{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:.4rem .9rem;font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:.35rem}
 .rule-chip strong{color:var(--text)}
 .temas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.9rem}
 .tema-card{background:var(--card);border:2px solid var(--border);border-radius:var(--radius);padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
-.tema-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s}
 .tema-card:hover{transform:translateY(-4px)}
-.tema-card.locked{opacity:.45;cursor:not-allowed;pointer-events:none}
 .tema-card .t-icon{font-size:2rem;margin-bottom:.6rem}
 .tema-card .t-label{font-family:var(--fh);font-size:1.3rem;font-weight:800;letter-spacing:-.03em}
 .tema-card .t-sub{font-size:.75rem;color:var(--muted);margin-top:.3rem}
-.tema-card .t-badge{position:absolute;top:.55rem;right:.55rem;font-size:.65rem;font-weight:800;padding:.2rem .5rem;border-radius:99px;text-transform:uppercase;letter-spacing:.06em}
+.tema-card .t-badge{position:absolute;top:.55rem;right:.55rem;font-size:.65rem;font-weight:800;padding:.2rem .5rem;border-radius:99px;text-transform:uppercase}
 .t0{border-color:rgba(0,212,200,.35)}.t0:hover{background:var(--c1d);border-color:var(--c1)}.t0 .t-label{color:var(--c1)}
 .t1{border-color:rgba(139,109,255,.35)}.t1:hover{background:var(--c2d);border-color:var(--c2)}.t1 .t-label{color:var(--c2)}
 .t2{border-color:rgba(81,212,110,.35)}.t2:hover{background:var(--c3d);border-color:var(--c3)}.t2 .t-label{color:var(--c3)}
@@ -70,24 +80,29 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .t8{border-color:rgba(81,212,110,.35)}.t8:hover{background:var(--c3d);border-color:var(--c3)}.t8 .t-label{color:var(--c3)}
 .done-badge{background:rgba(81,212,110,.2);color:#51d46e;border:1px solid rgba(81,212,110,.4)}
 .hi-badge{background:rgba(255,171,46,.15);color:var(--c4);font-size:.7rem;padding:.15rem .5rem;border-radius:99px;margin-top:.4rem;display:inline-block}
+.mod-names-bar{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:1.5rem}
+.mod-chip{background:var(--card2);border:1px solid var(--border);border-radius:99px;padding:.3rem .8rem;font-size:.75rem;color:var(--muted)}
+.export-all-btn{background:linear-gradient(135deg,var(--c2),var(--c4));border:none;border-radius:99px;padding:.75rem 1.75rem;color:#fff;font-family:var(--fh);font-weight:800;font-size:.9rem;cursor:pointer;transition:opacity .2s;box-shadow:0 4px 24px rgba(139,109,255,.3)}
+.export-all-btn:hover{opacity:.88}
+.tema-card .print-btn{display:inline-flex;align-items:center;gap:.3rem;margin-top:.6rem;font-size:.7rem;font-weight:700;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:99px;padding:.25rem .7rem;color:var(--muted);cursor:pointer;transition:all .2s;font-family:var(--fb)}
+.tema-card .print-btn:hover{background:rgba(255,255,255,.14);color:var(--text)}
 
-/* ── QUIZ SCREEN ── */
+/* ── QUIZ ── */
 .quiz-wrap{max-width:740px;margin:0 auto;padding:1.5rem 1rem 3rem}
 .quiz-topbar{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
-.back-btn{background:var(--card);border:1px solid var(--border);border-radius:9px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:background .2s}
+.back-btn{background:var(--card);border:1px solid var(--border);border-radius:9px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;flex-shrink:0}
 .back-btn:hover{background:var(--card2)}
 .quiz-title{font-family:var(--fh);font-weight:800;font-size:1rem;flex:1}
 .quiz-score-live{font-family:var(--fh);font-weight:800;font-size:.9rem;color:var(--c4)}
-.prog-wrap{margin-bottom:.4rem}
-.prog-bar{height:8px;background:var(--card);border-radius:99px;overflow:hidden}
+.prog-bar{height:8px;background:var(--card);border-radius:99px;overflow:hidden;margin-bottom:.3rem}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--c4),var(--c1));border-radius:99px;transition:width .4s ease;width:0%}
-.prog-label{font-size:.76rem;color:var(--muted);font-weight:700;margin-top:.3rem;margin-bottom:1rem}
+.prog-label{font-size:.76rem;color:var(--muted);font-weight:700;margin-bottom:1rem}
 .streak-bar{display:flex;gap:.3rem;margin-bottom:1rem;flex-wrap:wrap}
 .streak-dot{width:14px;height:14px;border-radius:50%;background:var(--card2);border:2px solid var(--border);transition:all .3s}
 .streak-dot.ok{background:var(--c3);border-color:var(--c3);box-shadow:0 0 6px rgba(81,212,110,.5)}
 .streak-dot.ko{background:var(--c5);border-color:var(--c5)}
-.q-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;position:relative;overflow:hidden}
-.q-mod{font-size:.7rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem;font-family:var(--fh)}
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem}
+.q-mod{font-size:.7rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;font-family:var(--fh)}
 .q-num-badge{display:inline-block;font-family:var(--fh);font-size:.7rem;font-weight:800;background:var(--card2);border-radius:99px;padding:.15rem .6rem;margin-bottom:.6rem;color:var(--muted)}
 .q-text{font-family:var(--fh);font-size:1.05rem;font-weight:700;line-height:1.5;margin-bottom:1.25rem}
 .opts{display:grid;gap:.55rem}
@@ -101,25 +116,21 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .feedback.show{display:block}
 .feedback.ok{background:rgba(81,212,110,.1);color:#51d46e}
 .feedback.ko{background:rgba(255,90,122,.1);color:#ff9ab0}
-.next-btn{margin-top:1rem;background:var(--c4);border:none;border-radius:99px;padding:.65rem 1.75rem;color:#000;font-family:var(--fh);font-weight:800;font-size:.9rem;cursor:pointer;transition:opacity .2s}
+.next-btn{margin-top:1rem;background:var(--c4);border:none;border-radius:99px;padding:.65rem 1.75rem;color:#000;font-family:var(--fh);font-weight:800;font-size:.9rem;cursor:pointer}
 .next-btn:hover{opacity:.85}
 .combo-flash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--fh);font-size:3rem;font-weight:800;pointer-events:none;z-index:9000;animation:comboAnim .8s ease forwards;text-shadow:0 0 30px currentColor}
 @keyframes comboAnim{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}40%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-70%) scale(1)}}
 
-/* ── RESULT SCREEN ── */
+/* ── RESULT ── */
 .result-wrap{max-width:680px;margin:0 auto;padding:2rem 1rem 4rem}
 .result-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem 2rem;text-align:center}
-.result-emoji{font-size:4.5rem;margin-bottom:.5rem;animation:bounceIn .6s ease}
+.result-emoji{font-size:4rem;margin-bottom:.5rem;animation:bounceIn .6s ease}
 .result-title{font-family:var(--fh);font-size:1.6rem;font-weight:800;margin-bottom:.4rem}
 .score-display{margin:.5rem 0}
 .score-num{font-family:var(--fh);font-size:4.5rem;font-weight:800;letter-spacing:-.05em}
 .score-den{font-family:var(--fh);font-size:2rem;color:var(--muted)}
 .stars{font-size:2.2rem;margin:.5rem 0 1rem;letter-spacing:.15em}
 .result-msg{font-size:.95rem;color:#c8c8e0;margin-bottom:1.5rem}
-.xp-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem}
-.xp-bar-wrap{flex:1;height:10px;background:var(--card2);border-radius:99px;overflow:hidden}
-.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--c2),var(--c4));border-radius:99px;transition:width .8s ease .3s;width:0%}
-.xp-label{font-family:var(--fh);font-size:.8rem;font-weight:800;color:var(--c4);white-space:nowrap}
 .breakdown{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:left;margin-bottom:1rem}
 .breakdown-title{font-family:var(--fh);font-size:.82rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem}
 .brow{display:flex;align-items:center;gap:.75rem;padding:.4rem 0;border-top:1px solid var(--border);font-size:.86rem}
@@ -136,43 +147,91 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .best-chip{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.6rem 1rem;font-size:.82rem;text-align:center}
 .best-chip strong{display:block;font-family:var(--fh);font-size:1.1rem;font-weight:800;color:var(--c4)}
 .result-btns{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
-.btn-retry{background:var(--c4);border:none;border-radius:99px;padding:.7rem 1.75rem;color:#000;font-family:var(--fh);font-weight:800;font-size:.9rem;cursor:pointer;transition:opacity .2s}
+.btn-retry{background:var(--c4);border:none;border-radius:99px;padding:.7rem 1.75rem;color:#000;font-family:var(--fh);font-weight:800;font-size:.9rem;cursor:pointer}
 .btn-retry:hover{opacity:.85}
-.btn-home{background:var(--card2);border:1.5px solid var(--border);border-radius:99px;padding:.7rem 1.75rem;color:var(--text);font-family:var(--fh);font-weight:700;font-size:.9rem;cursor:pointer;transition:background .2s}
+.btn-home{background:var(--card2);border:1.5px solid var(--border);border-radius:99px;padding:.7rem 1.75rem;color:var(--text);font-family:var(--fh);font-weight:700;font-size:.9rem;cursor:pointer}
 .btn-home:hover{background:var(--card)}
 
-/* ── CONFETTI ── */
-.confetti-piece{position:absolute;top:-20px;animation:confettiFall linear forwards}
-@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}90%{opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
-@keyframes bounceIn{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
-#confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
+/* ── AUTH MODAL ── */
+.auth-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:8000;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(8px)}
+.auth-overlay.open{display:flex}
+.auth-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;max-width:420px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.6);position:relative}
+.auth-logo{font-size:2.8rem;text-align:center;margin-bottom:.75rem}
+.auth-title{font-family:var(--fh);font-size:1.5rem;font-weight:800;text-align:center;margin-bottom:.3rem}
+.auth-title span{color:var(--c4)}
+.auth-sub{font-size:.83rem;color:var(--muted);text-align:center;margin-bottom:1.75rem;line-height:1.5}
+.auth-tabs{display:flex;background:var(--card2);border-radius:99px;padding:.25rem;margin-bottom:1.5rem;gap:.25rem}
+.auth-tab{flex:1;text-align:center;padding:.45rem;border-radius:99px;font-family:var(--fh);font-size:.82rem;font-weight:700;cursor:pointer;color:var(--muted);transition:all .2s;border:none;background:none}
+.auth-tab.active{background:var(--c2);color:#fff}
+.auth-field{margin-bottom:.9rem}
+.auth-field label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;font-family:var(--fh)}
+.auth-field input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:.7rem 1rem;color:var(--text);font-family:var(--fb);font-size:.92rem;outline:none;transition:border-color .2s}
+.auth-field input:focus{border-color:var(--c2)}
+.auth-btn{width:100%;background:linear-gradient(135deg,var(--c2),var(--c4));border:none;border-radius:99px;padding:.85rem;color:#fff;font-family:var(--fh);font-weight:800;font-size:.95rem;cursor:pointer;margin-top:.5rem;transition:opacity .2s}
+.auth-btn:hover{opacity:.88}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed}
+.auth-skip{display:block;text-align:center;margin-top:1rem;font-size:.78rem;color:var(--muted);cursor:pointer;font-family:var(--fb)}
+.auth-skip:hover{color:var(--text)}
+.auth-msg{padding:.6rem .9rem;border-radius:8px;font-size:.83rem;margin-top:.75rem;display:none;line-height:1.5}
+.auth-msg.show{display:block}
+.auth-msg.error{background:rgba(255,90,122,.1);color:var(--c5);border:1px solid rgba(255,90,122,.25)}
+.auth-msg.success{background:rgba(81,212,110,.1);color:var(--c3);border:1px solid rgba(81,212,110,.25)}
+.auth-loading{display:none;text-align:center;padding:.5rem;color:var(--muted);font-size:.83rem}
+.auth-loading.show{display:block}
 
-/* ── MISC ── */
-.mod-names-bar{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:1.5rem}
-.mod-chip{background:var(--card2);border:1px solid var(--border);border-radius:99px;padding:.3rem .8rem;font-size:.75rem;color:var(--muted)}
-.export-all-btn{background:linear-gradient(135deg,var(--c2),var(--c4));border:none;border-radius:99px;padding:.8rem 2rem;color:#fff;font-family:var(--fh);font-weight:800;font-size:.95rem;cursor:pointer;transition:opacity .2s;box-shadow:0 4px 24px rgba(139,109,255,.35);letter-spacing:-.01em}
-.export-all-btn:hover{opacity:.88}
-.tema-card .print-btn{display:inline-flex;align-items:center;gap:.3rem;margin-top:.6rem;font-size:.7rem;font-weight:700;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:99px;padding:.25rem .7rem;color:var(--muted);cursor:pointer;transition:all .2s;font-family:var(--fb)}
-.tema-card .print-btn:hover{background:rgba(255,255,255,.14);color:var(--text)}
+/* ── RANKING MODAL ── */
+.ranking-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:5000;overflow-y:auto;padding:2rem 1rem;backdrop-filter:blur(6px)}
+.ranking-overlay.open{display:block}
+.ranking-modal{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:700px;margin:0 auto;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.ranking-header{background:linear-gradient(135deg,rgba(139,109,255,.2),rgba(255,171,46,.15));border-bottom:1px solid var(--border);padding:1.5rem 1.75rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.ranking-header h2{font-family:var(--fh);font-size:1.2rem;font-weight:800}
+.ranking-tabs{display:flex;gap:.5rem}
+.rtab{background:var(--card2);border:1px solid var(--border);border-radius:99px;padding:.35rem .9rem;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;font-family:var(--fh);transition:all .2s}
+.rtab.active{background:var(--c4);color:#000;border-color:var(--c4)}
+.ranking-close{background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:99px;padding:.35rem .85rem;font-size:.75rem;font-weight:700;color:var(--text);cursor:pointer;font-family:var(--fh)}
+.ranking-body{padding:1.5rem}
+.top10-list{display:flex;flex-direction:column;gap:.6rem}
+.top10-item{display:flex;align-items:center;gap:.9rem;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:.8rem 1rem}
+.top10-item.me{border-color:rgba(255,171,46,.4);background:rgba(255,171,46,.06)}
+.top10-pos{font-family:var(--fh);font-weight:800;font-size:1.1rem;width:28px;text-align:center;flex-shrink:0}
+.top10-pos.gold{color:#ffd700}.top10-pos.silver{color:#c0c0c0}.top10-pos.bronze{color:#cd7f32}
+.top10-name{flex:1;font-weight:700;font-size:.9rem}
+.top10-sub{font-size:.72rem;color:var(--muted);margin-top:.1rem}
+.top10-pts{font-family:var(--fh);font-weight:800;font-size:1rem;color:var(--c4)}
+.ranking-empty{text-align:center;padding:2.5rem;color:var(--muted);font-size:.9rem}
+.rk-spinner{display:inline-block;width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--c4);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:.75rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ranking-loading{text-align:center;padding:2rem;color:var(--muted)}
+.doc-table-wrap{overflow-x:auto;margin-top:.5rem}
+.doc-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.doc-table th{background:var(--card2);color:var(--muted);font-family:var(--fh);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;padding:.6rem .75rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+.doc-table td{padding:.55rem .75rem;border-bottom:1px solid var(--border);color:var(--text)}
+.doc-table tr:hover td{background:rgba(255,255,255,.02)}
+.doc-stat-row{display:flex;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.doc-stat{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;flex:1;min-width:100px;text-align:center}
+.doc-stat strong{display:block;font-family:var(--fh);font-size:1.4rem;font-weight:800;color:var(--c4)}
+.doc-stat span{font-size:.72rem;color:var(--muted)}
+.doc-pass-wrap{display:flex;gap:.6rem;margin-bottom:1rem}
+.doc-pass-wrap input{flex:1;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:.6rem .9rem;color:var(--text);font-family:var(--fb);font-size:.88rem;outline:none}
+.doc-pass-wrap input:focus{border-color:var(--c2)}
+.doc-pass-wrap button{background:var(--c2);border:none;border-radius:10px;padding:.6rem 1.1rem;color:#fff;font-family:var(--fh);font-weight:700;font-size:.82rem;cursor:pointer}
 
-/* ── PRINT MODAL ── */
+/* ── PRINT ── */
 .print-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10000;overflow-y:auto;padding:2rem 1rem;backdrop-filter:blur(4px)}
 .print-overlay.open{display:block}
 .print-modal{background:#fff;color:#111;max-width:720px;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.5)}
 .print-modal-header{background:#1a1a2e;color:#fff;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
 .print-modal-title{font-family:var(--fh);font-size:1.1rem;font-weight:800}
 .print-modal-actions{display:flex;gap:.6rem;flex-shrink:0}
-.pm-btn{border:none;border-radius:99px;padding:.5rem 1.1rem;font-family:var(--fh);font-weight:700;font-size:.82rem;cursor:pointer;transition:opacity .2s}
+.pm-btn{border:none;border-radius:99px;padding:.5rem 1.1rem;font-family:var(--fh);font-weight:700;font-size:.82rem;cursor:pointer}
 .pm-btn-print{background:var(--c4);color:#000}
-.pm-btn-print:hover{opacity:.85}
 .pm-btn-close{background:rgba(255,255,255,.12);color:#fff}
-.pm-btn-close:hover{background:rgba(255,255,255,.2)}
 .print-modal-body{padding:1.5rem}
 .pc-header{text-align:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #e0e0e0}
 .pc-header h2{font-family:var(--fh);font-size:1.4rem;font-weight:800;color:#1a1a2e;margin-bottom:.25rem}
 .pc-header p{font-size:.82rem;color:#666}
 .pc-meta{display:flex;justify-content:center;gap:1.5rem;margin-top:.75rem;flex-wrap:wrap}
-.pc-meta span{font-size:.75rem;color:#888;display:flex;align-items:center;gap:.25rem}
+.pc-meta span{font-size:.75rem;color:#888}
 .pc-mod-section{margin-bottom:1.25rem}
 .pc-mod-label{font-family:var(--fh);font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:.6rem;padding-bottom:.3rem;border-bottom:1px solid #eee}
 .pc-q{margin-bottom:1rem;page-break-inside:avoid}
@@ -184,64 +243,69 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .pc-answer-key{margin-top:1.5rem;padding-top:1rem;border-top:2px dashed #ddd}
 .pc-answer-key h3{font-family:var(--fh);font-size:.82rem;font-weight:800;color:#1a1a2e;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.06em}
 .pc-answers-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:.4rem}
-.pc-ans-item{background:#f4f4f8;border-radius:6px;padding:.35rem .4rem;text-align:center;font-size:.75rem}
+.pc-ans-item{background:#f4f4f8;border-radius:6px;padding:.35rem .4rem;text-align:center}
 .pc-ans-item .an{font-weight:800;color:#1a1a2e;font-family:var(--fh);font-size:.7rem}
 .pc-ans-item .av{color:#444;font-size:.65rem;margin-top:.1rem}
 .pc-footer{margin-top:1rem;text-align:center;font-size:.7rem;color:#aaa}
+
+/* ── CONFETTI ── */
+.confetti-piece{position:absolute;top:-20px;animation:confettiFall linear forwards}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}90%{opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+@keyframes bounceIn{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+#confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
 
 @media(max-width:600px){
   .home-hero h1{font-size:1.6rem}
   .temas-grid{grid-template-columns:1fr 1fr}
   .tema-card{padding:1.1rem .7rem}
-  .tema-card .t-icon{font-size:1.6rem}
-  .tema-card .t-label{font-size:1.1rem}
   .score-num{font-size:3.5rem}
-  .q-text{font-size:.95rem}
   .result-card{padding:1.5rem 1rem}
+  .auth-box{padding:1.75rem 1.25rem}
+  .ranking-tabs{flex-wrap:wrap}
 }
 @media print{
-  body > *:not(.print-overlay){display:none !important}
+  body>*:not(.print-overlay){display:none !important}
   .print-overlay{display:block !important;position:static !important;background:none !important;padding:0 !important;backdrop-filter:none !important}
   .print-modal{box-shadow:none !important;border-radius:0 !important;max-width:100% !important}
   .print-modal-header{display:none !important}
   .print-modal-body{padding:.5cm !important}
   .pc-q{page-break-inside:avoid;break-inside:avoid}
-  .pc-tema-block{display:block;page-break-after:always !important;break-after:page !important;page-break-inside:avoid}
+  .pc-tema-block{display:block;page-break-after:always !important;break-after:page !important}
   .pc-tema-block:last-child{page-break-after:auto !important;break-after:auto !important}
-  .pc-mod-section{page-break-inside:avoid;break-inside:avoid}
 }
 </style>
 </head>
 <body>
 
-<!-- [003] ESTRUCTURA HTML (PANTALLAS) -->
+<!-- [003] HTML — PANTALLAS -->
 <div id="confetti-container"></div>
 
-<!-- PRINT MODAL -->
-<div class="print-overlay" id="print-overlay">
-  <div class="print-modal">
-    <div class="print-modal-header">
-      <div class="print-modal-title" id="pm-title">📄 Tema A — Vista previa</div>
-      <div class="print-modal-actions">
-        <button class="pm-btn pm-btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
-        <button class="pm-btn pm-btn-close" onclick="closePrint()">✕ Cerrar</button>
-      </div>
+<!-- TOPBAR (siempre visible) -->
+<div class="user-topbar" id="user-topbar">
+  <div class="user-info">
+    <div class="user-avatar" id="user-avatar">👤</div>
+    <div>
+      <div class="user-name" id="user-name-display">Invitado</div>
+      <div class="user-mail" id="user-mail-display">Sin cuenta — los puntajes no se guardan</div>
     </div>
-    <div class="print-modal-body" id="pm-body"></div>
+  </div>
+  <div class="topbar-btns" id="topbar-btns">
+    <button class="tb-btn ranking" onclick="openRanking()">🏆 Ranking</button>
+    <button class="tb-btn login-cta" id="btn-login-cta" onclick="openAuth('login')">Ingresar / Registrarse</button>
   </div>
 </div>
 
-<!-- HOME SCREEN -->
+<!-- HOME -->
 <div id="screen-home" class="screen active">
   <div class="home-wrap">
     <div class="home-hero">
       <h1>Simulacro <span>NTICx</span> — Módulo 2</h1>
-      <p>Elegí uno de los 9 temas. Cada sesión las preguntas se reasignan aleatoriamente — siempre al menos 3 de cada submódulo.</p>
+      <p>Jugá sin cuenta o registrate para guardar tus puntajes y aparecer en el ranking.</p>
       <div class="rules-bar">
         <div class="rule-chip">📋 <strong>9 Temas</strong></div>
         <div class="rule-chip">❓ <strong>16 preguntas</strong> por tema</div>
-        <div class="rule-chip">🎯 <strong>≥3 de cada submódulo</strong></div>
-        <div class="rule-chip">🎲 <strong>Orden aleatorio</strong> cada vez</div>
+        <div class="rule-chip">🎯 <strong>≥3 por submódulo</strong></div>
+        <div class="rule-chip">☁️ <strong>Ranking en tiempo real</strong></div>
       </div>
     </div>
     <div class="mod-names-bar">
@@ -252,52 +316,99 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
     <div class="temas-grid" id="temas-grid"></div>
     <div style="text-align:center;margin-top:1.75rem">
       <button class="export-all-btn" onclick="openPrintAll()">🖨️ Exportar todos los temas a PDF</button>
-      <p style="font-size:.75rem;color:var(--muted);margin-top:.5rem">Genera un único documento con los 9 temas — cada uno en su propia página</p>
     </div>
   </div>
 </div>
 
-<!-- QUIZ SCREEN -->
+<!-- QUIZ -->
 <div id="screen-quiz" class="screen">
   <div class="quiz-wrap">
     <div class="quiz-topbar">
-      <div class="back-btn" onclick="goHome()" title="Volver">←</div>
+      <div class="back-btn" onclick="goHome()">←</div>
       <div class="quiz-title" id="quiz-title">Tema A</div>
       <div class="quiz-score-live" id="quiz-score-live">0 pts</div>
     </div>
-    <div class="prog-wrap">
-      <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
-      <div class="prog-label" id="prog-label">Pregunta 1 de 16</div>
-    </div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="prog-label" id="prog-label">Pregunta 1 de 16</div>
     <div class="streak-bar" id="streak-bar"></div>
     <div id="q-container"></div>
   </div>
 </div>
 
-<!-- RESULT SCREEN -->
+<!-- RESULT -->
 <div id="screen-result" class="screen">
   <div class="result-wrap">
     <div class="result-card" id="result-card"></div>
   </div>
 </div>
 
-<!-- [004] BANCO DE PREGUNTAS (JS) -->
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">📡</div>
+    <div class="auth-title">Simulacro <span>NTICx</span></div>
+    <div class="auth-sub" id="auth-sub">Guardá tu progreso y aparecé en el ranking. Tu puntaje de este tema ya está listo para subirse.</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-reg" onclick="switchAuthTab('register')">Crear cuenta</button>
+      <button class="auth-tab" id="tab-log" onclick="switchAuthTab('login')">Ya tengo cuenta</button>
+    </div>
+    <!-- REGISTRO -->
+    <div id="form-register">
+      <div class="auth-field"><label>Nombre completo</label><input type="text" id="reg-nombre" placeholder="Tu nombre y apellido"></div>
+      <div class="auth-field"><label>Mail</label><input type="email" id="reg-mail" placeholder="tu@mail.com"></div>
+      <div class="auth-field"><label>Contraseña</label><input type="password" id="reg-pass" placeholder="Elegí una contraseña"></div>
+      <button class="auth-btn" id="btn-register" onclick="doRegister()">Crear cuenta y guardar puntaje →</button>
+    </div>
+    <!-- LOGIN -->
+    <div id="form-login" style="display:none">
+      <div class="auth-field"><label>Mail</label><input type="email" id="log-mail" placeholder="tu@mail.com"></div>
+      <div class="auth-field"><label>Contraseña</label><input type="password" id="log-pass" placeholder="Tu contraseña"></div>
+      <button class="auth-btn" id="btn-login" onclick="doLogin()">Ingresar y guardar puntaje →</button>
+    </div>
+    <div class="auth-loading" id="auth-loading">⏳ Procesando...</div>
+    <div class="auth-msg" id="auth-msg"></div>
+    <span class="auth-skip" id="auth-skip" style="display:none"></span>
+  </div>
+</div>
+
+<!-- RANKING MODAL -->
+<div class="ranking-overlay" id="ranking-overlay" onclick="if(event.target===this)closeRanking()">
+  <div class="ranking-modal">
+    <div class="ranking-header">
+      <h2>🏆 Ranking — NTICx Módulo 2</h2>
+      <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+        <div class="ranking-tabs">
+          <button class="rtab active" id="tab-top10" onclick="switchRankTab('top10')">🥇 Top 10</button>
+          <button class="rtab" id="tab-docente" onclick="switchRankTab('docente')">👩‍🏫 Docente</button>
+        </div>
+        <button class="ranking-close" onclick="closeRanking()">✕ Cerrar</button>
+      </div>
+    </div>
+    <div class="ranking-body">
+      <div id="tab-top10-content"></div>
+      <div id="tab-docente-content" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT MODAL -->
+<div class="print-overlay" id="print-overlay" onclick="if(event.target===this)closePrint()">
+  <div class="print-modal">
+    <div class="print-modal-header">
+      <div class="print-modal-title" id="pm-title">Vista previa</div>
+      <div class="print-modal-actions">
+        <button class="pm-btn pm-btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button class="pm-btn pm-btn-close" onclick="closePrint()">✕</button>
+      </div>
+    </div>
+    <div class="print-modal-body" id="pm-body"></div>
+  </div>
+</div>
+
+<!-- [004] BANCO DE PREGUNTAS -->
 <script>
-// ════════════════════════════════════════════════════════
-//  MÓDULOS
-// ════════════════════════════════════════════════════════
-const MODS = {
-  m1: '🌐 Redes Digitales',
-  m2: '🔍 Alfabetización Informacional',
-  m3: '🇦🇷 Agenda Digital Argentina'
-};
-
-// ════════════════════════════════════════════════════════
-//  BANCO DE PREGUNTAS
-// ════════════════════════════════════════════════════════
-const BANK = [
-
-/* ─── MÓDULO 1 — REDES DIGITALES ─── */
+const MODS={m1:'🌐 Redes Digitales',m2:'🔍 Alfabetización Informacional',m3:'🇦🇷 Agenda Digital Argentina'};
+const BANK=[
 {mod:'m1',q:'¿Qué es una red digital?',opts:['Un programa para enviar correos','La conexión de dos o más dispositivos para compartir recursos e intercambiar información','Un tipo de antena para datos móviles','El conjunto de cables dentro de una PC'],ans:1},
 {mod:'m1',q:'¿Qué diferencia a una LAN de una WAN?',opts:['La velocidad de los procesadores','El alcance geográfico de la red','El sistema operativo usado','La cantidad de cables'],ans:1},
 {mod:'m1',q:'La Web es…',opts:['Lo mismo que Internet','Un servicio que funciona sobre Internet usando HTTP/HTTPS','Una red de cables submarinos','El sistema operativo de Google'],ans:1},
@@ -324,496 +435,636 @@ const BANK = [
 {mod:'m1',q:'Tu celular detecta WiFi disponible y datos móviles. ¿Qué prioriza automáticamente?',opts:['Los datos móviles porque son más estables','El WiFi, si está disponible','Los datos 5G siempre','La señal más reciente a la que se conectó'],ans:1},
 {mod:'m1',q:'Querés conectarte desde BA a un servidor en Tokio. ¿Qué tipo de red atravesás?',opts:['LAN','MAN','PAN','WAN (Internet)'],ans:3},
 {mod:'m1',q:'¿Qué ventaja tiene la topología en malla sobre la estrella?',opts:['Es más barata','Si un nodo falla, los datos pueden ir por rutas alternativas','Requiere menos cables','Es más fácil de administrar'],ans:1},
-{mod:'m1',q:'WhatsApp y Netflix usan Internet pero NO son "la Web". ¿Por qué?',opts:['Porque son apps de pago','Porque no usan HTTP/HTTPS para mostrar documentos de hipertexto','Porque solo funcionan en celulares','Porque son más nuevos que Internet'],ans:1},
+{mod:'m1',q:'WhatsApp y Netflix usan Internet pero NO son la Web. ¿Por qué?',opts:['Porque son apps de pago','Porque no usan HTTP/HTTPS para mostrar documentos de hipertexto','Porque solo funcionan en celulares','Porque son más nuevos que Internet'],ans:1},
 {mod:'m1',q:'Una empresa tiene oficinas en Buenos Aires, Córdoba y Rosario conectadas entre sí. ¿Qué tipo de red es?',opts:['LAN','PAN','WAN','MAN'],ans:2},
 {mod:'m1',q:'¿Por qué la fibra óptica es más confiable que el cable de cobre?',opts:['Porque es más barata','Porque transmite luz: sin interferencias y con mayor velocidad','Porque no necesita mantenimiento','Porque el cobre ya no se fabrica'],ans:1},
-{mod:'m1',q:'Tu celular muestra "4G" en la barra. ¿A qué infraestructura se está conectando?',opts:['Al router WiFi más cercano','A una torre BTS del operador','A un satélite geoestacionario','Al modem de tu casa por Bluetooth'],ans:1},
-
-/* ─── MÓDULO 2 — ALFABETIZACIÓN INFORMACIONAL ─── */
+{mod:'m1',q:'Tu celular muestra 4G en la barra. ¿A qué infraestructura se está conectando?',opts:['Al router WiFi más cercano','A una torre BTS del operador','A un satélite geoestacionario','Al modem de tu casa por Bluetooth'],ans:1},
 {mod:'m2',q:'¿Qué es la alfabetización informacional?',opts:['Saber leer y escribir en la era digital','La habilidad para encontrar, evaluar, usar y comunicar información de forma crítica y ética','Conocer los comandos básicos de una computadora','Tener muchos seguidores en redes sociales'],ans:1},
-{mod:'m2',q:'En el método C.A.R.P.O., la "C" significa…',opts:['Contenido','Credibilidad','Cantidad','Contexto'],ans:1},
-{mod:'m2',q:'La "P" en C.A.R.P.O. hace referencia al…',opts:['Precio del acceso','Propósito del sitio (si informa, vende, persuade o entretiene)','Porcentaje de visitas','Protocolo de seguridad usado'],ans:1},
-{mod:'m2',q:'¿Qué significa "triangular la información"?',opts:['Usar tres palabras clave en el buscador','Verificar un dato en al menos tres fuentes independientes y confiables','Buscar en tres buscadores distintos','Leer tres párrafos del mismo artículo'],ans:1},
+{mod:'m2',q:'En el método C.A.R.P.O., la C significa…',opts:['Contenido','Credibilidad','Cantidad','Contexto'],ans:1},
+{mod:'m2',q:'La P en C.A.R.P.O. hace referencia al…',opts:['Precio del acceso','Propósito del sitio (si informa, vende, persuade o entretiene)','Porcentaje de visitas','Protocolo de seguridad usado'],ans:1},
+{mod:'m2',q:'¿Qué significa triangular la información?',opts:['Usar tres palabras clave en el buscador','Verificar un dato en al menos tres fuentes independientes y confiables','Buscar en tres buscadores distintos','Leer tres párrafos del mismo artículo'],ans:1},
 {mod:'m2',q:'¿Qué es la desinformación?',opts:['Información verdadera pero antigua','Información falsa creada y difundida intencionalmente para engañar','Un error tipográfico en una nota periodística','Información difundida sin intención de engañar'],ans:1},
 {mod:'m2',q:'¿Cuál es la diferencia entre desinformación y misinformación?',opts:['No hay diferencia, son sinónimos','La desinformación es intencional; la misinformación no lo es','La misinformación es solo digital; la desinformación es impresa','La desinformación es menos grave'],ans:1},
-{mod:'m2',q:'¿Qué es la "posverdad"?',opts:['Una noticia verificada después del hecho','Un fenómeno donde las emociones pesan más que los hechos verificables','La verdad oficial de un gobierno','Una técnica de búsqueda avanzada'],ans:1},
-{mod:'m2',q:'¿Qué es una "infodemia"?',opts:['Una epidemia causada por virus informáticos','Un exceso de información (verdadera y falsa) que distorsiona la toma de decisiones','Un tipo de spam en correos electrónicos','La saturación de publicidad en redes sociales'],ans:1},
-{mod:'m2',q:'La "O" en C.A.R.P.O. evalúa la…',opts:['Originalidad del contenido','Objetividad: si separa hechos de opiniones y presenta múltiples perspectivas','Organización visual del sitio','Ortografía del texto'],ans:1},
+{mod:'m2',q:'¿Qué es la posverdad?',opts:['Una noticia verificada después del hecho','Un fenómeno donde las emociones pesan más que los hechos verificables','La verdad oficial de un gobierno','Una técnica de búsqueda avanzada'],ans:1},
+{mod:'m2',q:'¿Qué es una infodemia?',opts:['Una epidemia causada por virus informáticos','Un exceso de información (verdadera y falsa) que distorsiona la toma de decisiones','Un tipo de spam en correos electrónicos','La saturación de publicidad en redes sociales'],ans:1},
+{mod:'m2',q:'La O en C.A.R.P.O. evalúa la…',opts:['Originalidad del contenido','Objetividad: si separa hechos de opiniones y presenta múltiples perspectivas','Organización visual del sitio','Ortografía del texto'],ans:1},
 {mod:'m2',q:'Una fuente primaria es…',opts:['El primer resultado de Google','Un estudio original, organismo oficial o institución reconocida','Un artículo de Wikipedia','Cualquier página con HTTPS'],ans:1},
-{mod:'m2',q:'El operador "filetype:pdf" en Google sirve para…',opts:['Buscar imágenes en formato PDF','Filtrar por fecha de publicación','Buscar solo archivos de ese tipo','Excluir PDFs de los resultados'],ans:2},
+{mod:'m2',q:'El operador filetype:pdf en Google sirve para…',opts:['Buscar imágenes en formato PDF','Filtrar por fecha de publicación','Buscar solo archivos de ese tipo','Excluir PDFs de los resultados'],ans:2},
 {mod:'m2',q:'¿Qué es Chequeado?',opts:['Un programa del gobierno para revisar documentos','El principal verificador de datos de Argentina, con periodistas especializados','Una red social para compartir noticias verificadas','Una extensión del navegador que detecta fake news'],ans:1},
-{mod:'m2',q:'La "R" en C.A.R.P.O. evalúa la…',opts:['Reputación del autor en redes','Relevancia: si la información es pertinente para el tema que buscás','Rapidez con que carga la página','Redacción del contenido'],ans:1},
-{mod:'m2',q:'El operador "site:" en Google…',opts:['Busca sitios web en general','Limita la búsqueda a un sitio o dominio específico','Muestra el mapa del sitio','Filtra sitios seguros'],ans:1},
-{mod:'m2',q:'Usar el operador "-" (menos) en Google sirve para…',opts:['Ordenar resultados de menor a mayor','Excluir una palabra de los resultados','Buscar solo en dominios .com','Abrir el modo incógnito'],ans:1},
+{mod:'m2',q:'La R en C.A.R.P.O. evalúa la…',opts:['Reputación del autor en redes','Relevancia: si la información es pertinente para el tema que buscás','Rapidez con que carga la página','Redacción del contenido'],ans:1},
+{mod:'m2',q:'El operador site: en Google…',opts:['Busca sitios web en general','Limita la búsqueda a un sitio o dominio específico','Muestra el mapa del sitio','Filtra sitios seguros'],ans:1},
+{mod:'m2',q:'Usar el operador - (menos) en Google sirve para…',opts:['Ordenar resultados de menor a mayor','Excluir una palabra de los resultados','Buscar solo en dominios .com','Abrir el modo incógnito'],ans:1},
 {mod:'m2',q:'¿Cuál de estos dominios es generalmente más confiable según C.A.R.P.O.?',opts:['.com.ar','.net','.gob.ar','.org'],ans:2},
-{mod:'m2',q:'¿Qué significa la "A" en C.A.R.P.O.?',opts:['Autor verificable','Accuracy (Exactitud): los datos son verificables y precisos','Actualización reciente','Alcance del contenido'],ans:1},
+{mod:'m2',q:'¿Qué significa la A en C.A.R.P.O.?',opts:['Autor verificable','Accuracy (Exactitud): los datos son verificables y precisos','Actualización reciente','Alcance del contenido'],ans:1},
 {mod:'m2',q:'¿Qué es una cámara de eco digital?',opts:['Un micrófono de alta calidad para podcasts','Un entorno online donde solo circula información que confirma las creencias previas del usuario','Una sala de chat cerrada','Un algoritmo que detecta fake news'],ans:1},
 {mod:'m2',q:'¿Qué es el sesgo de confirmación?',opts:['La tendencia a buscar solo información que confirme lo que ya creemos','Un error técnico en el algoritmo de búsqueda','El efecto de la publicidad en las búsquedas','Un criterio del método C.A.R.P.O.'],ans:0},
 {mod:'m2',q:'El operador de comillas en Google sirve para…',opts:['Excluir palabras de la búsqueda','Buscar la frase exacta entre comillas','Buscar archivos de texto','Filtrar por idioma'],ans:1},
 {mod:'m2',q:'¿Qué porcentaje de adolescentes latinoamericanos no puede identificar una noticia falsa?',opts:['30%','45%','64%','80%'],ans:2},
-{mod:'m2',q:'Encontrás una noticia con título "¡¡INCREÍBLE!! EL GOBIERNO OCULTA LA VERDAD". ¿Qué señal de alerta es?',opts:['Ninguna, es una noticia importante','Título alarmista sin referencias ni autor, señal de fuente no confiable','Indica que es una fuente oficial','Significa que el sitio tiene muchas visitas'],ans:1},
-{mod:'m2',q:'Ves una nota en "infobae.com.co". ¿Por qué deberías desconfiar?',opts:['Porque .co es de Colombia y no tiene noticias de Argentina','Porque es un dominio que imita al original infobae.com, señal de sitio falso','Porque los dominios .co no tienen HTTPS','Porque Infobae solo publica en papel'],ans:1},
-{mod:'m2',q:'Buscás "Python" y aparecen resultados sobre la serpiente. ¿Qué operador usás para excluirlos?',opts:['Python site:python.org','Python filetype:py','Python -serpiente','"Python" OR "programación"'],ans:2},
-{mod:'m2',q:'Un sitio tiene HTTPS, diseño profesional y aparece primero en Google. ¿Eso garantiza que es confiable?',opts:['Sí, porque Google verifica el contenido','No, HTTPS solo indica seguridad técnica, no veracidad del contenido','Sí, si tiene HTTPS no puede tener información falsa','Depende de si tiene más de 1000 artículos'],ans:1},
-{mod:'m2',q:'Querés buscar resultados de IA posteriores al 1° de enero de 2024. ¿Qué operador usás?',opts:['before:2024-01-01','after:2024-01-01','date:2024','filetype:2024'],ans:1},
+{mod:'m2',q:'Encontrás una noticia con título INCREIBLE EL GOBIERNO OCULTA LA VERDAD. ¿Qué señal de alerta es?',opts:['Ninguna, es una noticia importante','Título alarmista sin referencias ni autor, señal de fuente no confiable','Indica que es una fuente oficial','Significa que el sitio tiene muchas visitas'],ans:1},
+{mod:'m2',q:'Ves una nota en infobae.com.co. ¿Por qué deberías desconfiar?',opts:['Porque .co es de Colombia y no tiene noticias de Argentina','Porque es un dominio que imita al original infobae.com, señal de sitio falso','Porque los dominios .co no tienen HTTPS','Porque Infobae solo publica en papel'],ans:1},
+{mod:'m2',q:'Buscás Python y aparecen resultados sobre la serpiente. ¿Qué operador usás para excluirlos?',opts:['Python site:python.org','Python filetype:py','Python -serpiente','Python OR programacion'],ans:2},
+{mod:'m2',q:'Un sitio tiene HTTPS, diseño profesional y aparece primero en Google. ¿Garantiza que es confiable?',opts:['Sí, porque Google verifica el contenido','No, HTTPS solo indica seguridad técnica, no veracidad del contenido','Sí, con HTTPS no puede haber información falsa','Depende de si tiene más de 1000 artículos'],ans:1},
+{mod:'m2',q:'Querés buscar resultados de IA posteriores al 1 de enero de 2024. ¿Qué operador usás?',opts:['before:2024-01-01','after:2024-01-01','date:2024','filetype:2024'],ans:1},
 {mod:'m2',q:'Una vez que una fake news es refutada, ¿qué pasa con el daño causado?',opts:['Desaparece completamente porque la gente lo sabe','El daño persiste digitalmente aunque sea refutada','Solo persiste si la compartieron más de 1000 personas','Se puede eliminar con una orden judicial'],ans:1},
 {mod:'m2',q:'Durante la pandemia de COVID-19, el exceso de información que distorsionó decisiones se llamó…',opts:['Posverdad','Desinformación masiva','Infodemia','Misinformación colectiva'],ans:2},
 {mod:'m2',q:'¿Por qué los algoritmos de redes sociales pueden profundizar el sesgo de confirmación?',opts:['Porque muestran contenido en orden cronológico','Porque priorizan contenido con el que el usuario ya interactuó, creando cámaras de eco','Porque censuran opiniones contrarias','Porque solo muestran publicidad relacionada'],ans:1},
 {mod:'m2',q:'Si encontrás un dato en Wikipedia, ¿es suficiente para citarlo en un trabajo?',opts:['Sí, Wikipedia es siempre confiable','No: hay que rastrear las fuentes que cita Wikipedia y verificarlas directamente','Sí, si el artículo tiene muchas referencias','No, Wikipedia nunca es confiable'],ans:1},
-
-/* ─── MÓDULO 3 — AGENDA DIGITAL ARGENTINA ─── */
 {mod:'m3',q:'¿Qué es la brecha digital?',opts:['La diferencia de velocidad entre WiFi y datos móviles','La desigualdad en el acceso, uso y aprovechamiento de las TIC entre personas o grupos','El costo de los dispositivos tecnológicos','La diferencia entre Internet y la Web'],ans:1},
-{mod:'m3',q:'¿Cuáles son las tres dimensiones de la brecha digital según el módulo?',opts:['Velocidad, costo y dispositivos','Acceso, uso y calidad','Infraestructura, software y hardware','Conexión, formación y contenidos'],ans:1},
+{mod:'m3',q:'¿Cuáles son las tres dimensiones de la brecha digital?',opts:['Velocidad, costo y dispositivos','Acceso, uso y calidad','Infraestructura, software y hardware','Conexión, formación y contenidos'],ans:1},
 {mod:'m3',q:'¿Qué es la REFEFO?',opts:['Red Federal de Fibra Óptica: infraestructura estatal para llevar conectividad al interior','Red de Escuelas con Formación Online','Registro Federal de Fomento de Obras','Red Federal de Formación Docente'],ans:0},
 {mod:'m3',q:'¿Qué programa distribuyó computadoras a estudiantes de secundaria pública?',opts:['Argentina Conectada','Plan Conectar','Conectar Igualdad','Plan Digital Nacional'],ans:2},
-{mod:'m3',q:'¿Cuántas dimensiones de la brecha digital NO se resuelven solo con dar dispositivos?',opts:['Ninguna, con dispositivos alcanza','Solo la brecha de acceso se resuelve','La brecha de uso y la de calidad siguen sin resolverse','La brecha de acceso tampoco'],ans:2},
-{mod:'m3',q:'¿Qué es Mi Argentina?',opts:['Una red social del Estado','La plataforma oficial del Estado que centraliza trámites y documentos digitales para ciudadanos','Un buscador educativo argentino','Un sistema de pago online del ANSES'],ans:1},
-{mod:'m3',q:'¿Qué puede hacerse con Mi Argentina que antes requería ir a una oficina?',opts:['Votar en elecciones nacionales','Obtener el DNI digital, licencia de conducir o iniciar trámites desde el celular','Pagar multas de tránsito en efectivo','Solicitar atención médica de urgencia'],ans:1},
-{mod:'m3',q:'¿Qué provincias tienen históricamente menor conectividad según el módulo?',opts:['Buenos Aires y Córdoba','Chaco, Formosa y zonas rurales del NOA y NEA','Mendoza y San Luis','Santa Fe y Entre Ríos'],ans:1},
+{mod:'m3',q:'¿Qué es Mi Argentina?',opts:['Una red social del Estado','La plataforma oficial del Estado que centraliza trámites y documentos digitales','Un buscador educativo argentino','Un sistema de pago online del ANSES'],ans:1},
+{mod:'m3',q:'¿Qué provincias tienen históricamente menor conectividad?',opts:['Buenos Aires y Córdoba','Chaco, Formosa y zonas rurales del NOA y NEA','Mendoza y San Luis','Santa Fe y Entre Ríos'],ans:1},
 {mod:'m3',q:'¿Qué es la Agenda Digital Nacional?',opts:['Una ley de Internet gratuita','Una política pública del Estado orientada a la transformación digital del país','Un plan de Netflix para Argentina','Un programa de Google para escuelas'],ans:1},
-{mod:'m3',q:'¿Cuántos ejes tiene la Agenda Digital Nacional según el módulo?',opts:['2','3','4','5'],ans:2},
+{mod:'m3',q:'¿Cuántos ejes tiene la Agenda Digital Nacional?',opts:['2','3','4','5'],ans:2},
 {mod:'m3',q:'¿Qué significa ODS?',opts:['Organización Digital Sostenible','Objetivos de Desarrollo Sostenible','Operación Digital Sustentable','Organismo de Datos Sociales'],ans:1},
-{mod:'m3',q:'¿A qué se llama "inclusión digital"?',opts:['Tener Internet de alta velocidad en el hogar','Garantizar que todas las personas puedan acceder y usar las TIC de forma significativa','Instalar fibra óptica en todas las ciudades','Distribuir teléfonos celulares gratis'],ans:1},
+{mod:'m3',q:'¿A qué se llama inclusión digital?',opts:['Tener Internet de alta velocidad en el hogar','Garantizar que todas las personas puedan acceder y usar las TIC de forma significativa','Instalar fibra óptica en todas las ciudades','Distribuir teléfonos celulares gratis'],ans:1},
 {mod:'m3',q:'¿Cuál de estas NO es una dimensión de la brecha digital?',opts:['Brecha de acceso','Brecha de uso','Brecha de calidad','Brecha de velocidad de procesamiento del CPU'],ans:3},
-{mod:'m3',q:'¿A quiénes puede excluir la plataforma Mi Argentina profundizando la brecha digital?',opts:['Solo a personas mayores de 65 años','A personas sin Internet o sin celular','Solo a personas que no tienen DNI argentino','Solo a personas que viven en el exterior'],ans:1},
-{mod:'m3',q:'Conectar Igualdad distribuyó computadoras específicamente a…',opts:['Todos los estudiantes argentinos','Estudiantes de escuela secundaria pública','Docentes universitarios','Escuelas privadas de zonas rurales'],ans:1},
+{mod:'m3',q:'¿A quiénes puede excluir Mi Argentina profundizando la brecha digital?',opts:['Solo a personas mayores de 65 años','A personas sin Internet o sin celular','Solo a personas sin DNI argentino','Solo a personas que viven en el exterior'],ans:1},
+{mod:'m3',q:'Conectar Igualdad distribuyó computadoras a…',opts:['Todos los estudiantes argentinos','Estudiantes de escuela secundaria pública','Docentes universitarios','Escuelas privadas de zonas rurales'],ans:1},
 {mod:'m3',q:'¿Qué es el derecho de acceso a la información?',opts:['El derecho a tener Internet gratuito','El derecho a buscar, recibir y difundir información sin restricciones arbitrarias, reconocido por la ONU','El derecho a no pagar por contenidos digitales','El derecho a tener una computadora personal'],ans:1},
-{mod:'m3',q:'Los NAP (Núcleos de Aprendizaje Prioritario) son…',opts:['Las velocidades mínimas de Internet garantizadas por el Estado','Los contenidos mínimos obligatorios que debe enseñar la escuela argentina','Los protocolos de seguridad informática del Estado','Los criterios para evaluar la brecha digital'],ans:1},
+{mod:'m3',q:'Los NAP son…',opts:['Las velocidades mínimas de Internet garantizadas por el Estado','Los contenidos mínimos obligatorios que debe enseñar la escuela argentina','Los protocolos de seguridad informática del Estado','Los criterios para evaluar la brecha digital'],ans:1},
 {mod:'m3',q:'Una abuela tiene smartphone pero no puede renovar su jubilación online. ¿Qué tipo de brecha sufre?',opts:['Brecha de acceso','Brecha de calidad','Brecha de uso','Brecha de infraestructura'],ans:2},
 {mod:'m3',q:'En una comunidad rural del Chaco solo hay cobertura 2G. ¿Qué tipo de brecha describe?',opts:['Brecha de acceso (no tienen dispositivos)','Brecha de calidad (conexión lenta e inestable)','Brecha de uso (no saben usar la tecnología)','No es una brecha digital'],ans:1},
-{mod:'m3',q:'Una alumna recibe su netbook por Conectar Igualdad. ¿Qué tipo de brecha se reduce principalmente?',opts:['Brecha de uso','Brecha de calidad','Brecha de acceso (ahora tiene dispositivo)','Brecha generacional'],ans:2},
-{mod:'m3',q:'El Estado argentino tiende fibra óptica en provincias del norte (REFEFO). ¿Qué brecha intenta reducir?',opts:['Brecha de uso','Brecha de calidad y acceso en zonas con mala conectividad','Brecha generacional','Brecha de contenidos digitales'],ans:1},
+{mod:'m3',q:'Una alumna recibe su netbook por Conectar Igualdad. ¿Qué brecha se reduce principalmente?',opts:['Brecha de uso','Brecha de calidad','Brecha de acceso (ahora tiene dispositivo)','Brecha generacional'],ans:2},
+{mod:'m3',q:'El Estado tiende fibra óptica en provincias del norte (REFEFO). ¿Qué brecha intenta reducir?',opts:['Brecha de uso','Brecha de calidad y acceso en zonas con mala conectividad','Brecha generacional','Brecha de contenidos digitales'],ans:1},
 {mod:'m3',q:'Solo el 58% de las escuelas secundarias argentinas tiene Internet. ¿Qué consecuencia tiene?',opts:['Los alumnos aprenden mejor sin distractores','Profundiza la brecha digital educativa en el 42% de las escuelas','No tiene impacto porque los alumnos tienen celular','Incentiva a los alumnos a usar datos propios'],ans:1},
 {mod:'m3',q:'¿Por qué reducir la brecha de acceso no garantiza la inclusión digital completa?',opts:['Porque la inclusión digital no existe','Porque también hay brechas de uso y calidad que persisten aunque se tenga el dispositivo','Porque los dispositivos son insuficientes','Porque Internet es demasiado caro'],ans:1},
 {mod:'m3',q:'¿Qué tensión existe entre digitalizar trámites del Estado y garantizar el derecho de acceso?',opts:['Ninguna, lo digital siempre es mejor','Puede excluir a quienes no tienen acceso o habilidades, contradiciendo el derecho de acceso','La tensión solo existe en países pobres','La tensión se resuelve sola con el tiempo'],ans:1},
 {mod:'m3',q:'¿Por qué NTICx se relaciona con ciudadanía y no solo con tecnología?',opts:['Porque en Argentina la tecnología es obligatoria por ley','Porque las TIC son infraestructura de derechos: acceso a información, participación y trabajo','Porque los docentes de tecnología enseñan ciudadanía','Porque el gobierno lo exige en el diseño curricular'],ans:1},
 {mod:'m3',q:'¿Cómo puede la brecha digital afectar la participación ciudadana?',opts:['No la afecta, la democracia es presencial','Quienes no tienen acceso quedan excluidos de trámites, información y espacios de participación online','Solo afecta al voto electrónico','Solo afecta a migrantes'],ans:1},
 {mod:'m3',q:'Compará Conectar Igualdad con REFEFO: ¿abordan la misma dimensión de la brecha?',opts:['Sí, ambas abordan lo mismo','No: Conectar Igualdad ataca la brecha de dispositivos y uso; REFEFO la infraestructura','Ambas solo abordan la brecha de uso','REFEFO es más completa porque incluye dispositivos'],ans:1},
-{mod:'m3',q:'Si tuvieras que diseñar una política de inclusión digital para Argentina, ¿qué tres ejes priorizarías?',opts:['Velocidad, cantidad de celulares y precio de apps','Infraestructura (acceso), capacitación (uso) y contenidos relevantes','Solo bajar el precio de Internet y dar netbooks','Solo construir más torres de 5G en el interior'],ans:1},
 {mod:'m3',q:'Un alumno tiene PC de Conectar Igualdad pero no tiene Internet en casa. ¿Qué brecha sigue sin resolverse?',opts:['Brecha de uso','Brecha de acceso a la conectividad','Brecha de calidad del dispositivo','Brecha generacional'],ans:1},
-{mod:'m3',q:'¿Qué diferencia hay entre "acceso a Internet" e "inclusión digital plena"?',opts:['Son lo mismo','El acceso es condición necesaria, pero la inclusión plena también requiere habilidades y contenidos relevantes','La inclusión plena solo depende de la velocidad','El acceso es más importante que la inclusión'],ans:1},
+{mod:'m3',q:'¿Qué diferencia hay entre acceso a Internet e inclusión digital plena?',opts:['Son lo mismo','El acceso es condición necesaria, pero la inclusión plena también requiere habilidades y contenidos relevantes','La inclusión plena solo depende de la velocidad','El acceso es más importante que la inclusión'],ans:1},
 ];
 
-// ════════════════════════════════════════════════════════
-//  TEMA DEFINITIONS
-// ════════════════════════════════════════════════════════
-const TEMA_DEFS = [
-  {id:'A', label:'TEMA A', icon:'📄', color:'t0'},
-  {id:'B', label:'TEMA B', icon:'📋', color:'t1'},
-  {id:'C', label:'TEMA C', icon:'📝', color:'t2'},
-  {id:'D', label:'TEMA D', icon:'📃', color:'t3'},
-  {id:'E', label:'TEMA E', icon:'🗒️', color:'t4'},
-  {id:'F', label:'TEMA F', icon:'📑', color:'t5'},
-  {id:'G', label:'TEMA G', icon:'🗂️', color:'t6'},
-  {id:'H', label:'TEMA H', icon:'📊', color:'t7'},
-  {id:'I', label:'TEMA I', icon:'📌', color:'t8'},
+// [005] CONFIG BACKEND
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwlVjK7jZmxyaizqluXBCrAzVPwAzzXOgkDbftLTgbAGPagNL7j-17vfAb09vokO9fLYg/exec';
+const CLAVE_DOCENTE='profe2025';
+
+async function apiGet(params){
+  try{const r=await fetch(SCRIPT_URL+'?'+new URLSearchParams(params));return r.json();}
+  catch(e){return{error:'Sin conexión'};}
+}
+async function apiPost(data){
+  try{const r=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(data),headers:{'Content-Type':'application/json'}});return r.json();}
+  catch(e){return{error:'Sin conexión'};}
+}
+
+// [006] AUTH LOGIC
+const LS_USER='nticx_m2_user';
+const LS_SCORES='nticx_m2_local_scores';
+const LS_AUTH_DONE='nticx_m2_auth_done';
+
+let currentUser = null;
+let pendingScore = null; // puntaje que disparó el modal
+
+function loadSavedUser(){
+  try{
+    const u=JSON.parse(localStorage.getItem(LS_USER)||'null');
+    if(u){currentUser=u;updateTopbar();}
+  }catch(e){}
+}
+
+function getLocalScores(){
+  try{return JSON.parse(localStorage.getItem(LS_SCORES)||'{}');}catch(e){return{};}
+}
+function saveLocalScore(temaId,score){
+  const s=getLocalScores();
+  if(!s[temaId]||score>s[temaId])s[temaId]=score;
+  try{localStorage.setItem(LS_SCORES,JSON.stringify(s));}catch(e){}
+}
+
+function updateTopbar(){
+  const btns=document.getElementById('topbar-btns');
+  if(currentUser){
+    document.getElementById('user-avatar').textContent=currentUser.nombre.charAt(0).toUpperCase();
+    document.getElementById('user-name-display').textContent=currentUser.nombre;
+    document.getElementById('user-mail-display').textContent=currentUser.mail;
+    btns.innerHTML=`
+      <button class="tb-btn ranking" onclick="openRanking()">🏆 Ranking</button>
+      <button class="tb-btn logout" onclick="doLogout()">Salir</button>`;
+  }else{
+    document.getElementById('user-avatar').textContent='👤';
+    document.getElementById('user-name-display').textContent='Invitado';
+    document.getElementById('user-mail-display').textContent='Sin cuenta — los puntajes no se guardan en la nube';
+    btns.innerHTML=`
+      <button class="tb-btn ranking" onclick="openRanking()">🏆 Ranking</button>
+      <button class="tb-btn login-cta" onclick="openAuth('register')">Crear cuenta / Ingresar</button>`;
+  }
+}
+
+function openAuth(tab){
+  pendingScore=null;
+  document.getElementById('auth-sub').textContent='Guardá tu progreso y aparecé en el ranking de la clase.';
+  // desde el topbar se puede cerrar libremente
+  document.getElementById('auth-skip').textContent='Ahora no — seguir sin cuenta';
+  document.getElementById('auth-skip').style.cssText='display:block;text-align:center;margin-top:1rem;font-size:.78rem;color:var(--muted);cursor:pointer;font-family:var(--fb)';
+  document.getElementById('auth-skip').onclick=()=>{
+    pendingScore=null;
+    document.getElementById('auth-overlay').classList.remove('open');
+    clearAuthMsg();
+  };
+  document.getElementById('auth-overlay').classList.add('open');
+  switchAuthTab(tab||'register');
+}
+
+function openAuthForScore(scoreData){
+  // ya hizo auth antes en este dispositivo → subir directo
+  if(localStorage.getItem(LS_AUTH_DONE)==='1'&&currentUser){
+    uploadScore(scoreData);
+    return;
+  }
+  pendingScore=scoreData;
+  const sub=document.getElementById('auth-sub');
+  if(localStorage.getItem(LS_AUTH_DONE)==='1'){
+    sub.textContent='Ingresá para guardar tu puntaje en el ranking.';
+  }else{
+    sub.textContent='Es la primera vez que guardás un puntaje. Creá tu cuenta o ingresá — después lo hacemos automático.';
+  }
+  document.getElementById('auth-skip').style.display='block';
+  document.getElementById('auth-overlay').classList.add('open');
+  switchAuthTab('register');
+}
+
+function closeAuth(){
+  // Si hay resultado pendiente, no se puede cerrar sin autenticarse
+  if(pendingScore)return;
+  document.getElementById('auth-overlay').classList.remove('open');
+  clearAuthMsg();
+}
+
+function switchAuthTab(tab){
+  document.getElementById('tab-reg').classList.toggle('active',tab==='register');
+  document.getElementById('tab-log').classList.toggle('active',tab==='login');
+  document.getElementById('form-register').style.display=tab==='register'?'block':'none';
+  document.getElementById('form-login').style.display=tab==='login'?'block':'none';
+  clearAuthMsg();
+  // ajustar texto del botón según si hay puntaje pendiente
+  const hasPending=!!pendingScore;
+  document.getElementById('btn-register').textContent=hasPending?'Crear cuenta y guardar puntaje →':'Crear cuenta →';
+  document.getElementById('btn-login').textContent=hasPending?'Ingresar y guardar puntaje →':'Ingresar →';
+}
+
+function setAuthLoading(on){
+  document.getElementById('auth-loading').classList.toggle('show',on);
+  document.getElementById('btn-register').disabled=on;
+  document.getElementById('btn-login').disabled=on;
+}
+
+function showAuthMsg(txt,type){
+  const el=document.getElementById('auth-msg');
+  el.textContent=txt;
+  el.className='auth-msg show '+type;
+}
+function clearAuthMsg(){
+  const el=document.getElementById('auth-msg');
+  el.className='auth-msg';el.textContent='';
+}
+
+async function doRegister(){
+  const nombre=document.getElementById('reg-nombre').value.trim();
+  const mail=document.getElementById('reg-mail').value.trim().toLowerCase();
+  const pass=document.getElementById('reg-pass').value.trim();
+  if(!nombre||!mail||!pass){showAuthMsg('Completá todos los campos.','error');return;}
+  if(pass.length<4){showAuthMsg('La contraseña debe tener al menos 4 caracteres.','error');return;}
+  setAuthLoading(true);
+  const res=await apiPost({action:'register',nombre,mail,pass});
+  setAuthLoading(false);
+  if(res.error){showAuthMsg(res.error,'error');return;}
+  currentUser={nombre:res.nombre,mail:res.mail};
+  localStorage.setItem(LS_USER,JSON.stringify(currentUser));
+  localStorage.setItem(LS_AUTH_DONE,'1');
+  updateTopbar();
+  showAuthMsg('✅ Cuenta creada. ¡Bienvenido/a, '+nombre+'!','success');
+  await syncAllLocalScores();
+  setTimeout(()=>{
+    document.getElementById('auth-overlay').classList.remove('open');
+    clearAuthMsg();
+    pendingScore=null;
+    showResult();
+  },1200);
+}
+
+async function doLogin(){
+  const mail=document.getElementById('log-mail').value.trim().toLowerCase();
+  const pass=document.getElementById('log-pass').value.trim();
+  if(!mail||!pass){showAuthMsg('Completá mail y contraseña.','error');return;}
+  setAuthLoading(true);
+  const res=await apiGet({action:'login',mail,pass});
+  setAuthLoading(false);
+  if(res.error){showAuthMsg(res.error,'error');return;}
+  currentUser={nombre:res.nombre,mail:res.mail};
+  localStorage.setItem(LS_USER,JSON.stringify(currentUser));
+  localStorage.setItem(LS_AUTH_DONE,'1');
+  updateTopbar();
+  showAuthMsg('✅ Bienvenido/a de vuelta, '+res.nombre+'!','success');
+  await syncAllLocalScores();
+  setTimeout(()=>{
+    document.getElementById('auth-overlay').classList.remove('open');
+    clearAuthMsg();
+    pendingScore=null;
+    showResult();
+  },1200);
+}
+
+function doLogout(){
+  currentUser=null;
+  localStorage.removeItem(LS_USER);
+  localStorage.removeItem(LS_AUTH_DONE);
+  updateTopbar();
+}
+
+async function uploadScore(scoreData){
+  if(!currentUser)return;
+  await apiPost({action:'saveScore',...scoreData,mail:currentUser.mail,nombre:currentUser.nombre});
+}
+
+async function syncAllLocalScores(){
+  const scores=getLocalScores();
+  const entries=Object.entries(scores);
+  if(!entries.length||!currentUser)return;
+  const hoy=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const payload=entries.map(([tema,puntaje])=>({
+    mail:currentUser.mail,nombre:currentUser.nombre,
+    tema,puntaje,total:16,fecha:hoy
+  }));
+  await apiPost({action:'syncScores',scores:payload});
+}
+
+// [007] QUIZ LOGIC
+const TEMA_DEFS=[
+  {id:'A',label:'TEMA A',icon:'📄',color:'t0'},{id:'B',label:'TEMA B',icon:'📋',color:'t1'},
+  {id:'C',label:'TEMA C',icon:'📝',color:'t2'},{id:'D',label:'TEMA D',icon:'📃',color:'t3'},
+  {id:'E',label:'TEMA E',icon:'🗒️',color:'t4'},{id:'F',label:'TEMA F',icon:'📑',color:'t5'},
+  {id:'G',label:'TEMA G',icon:'🗂️',color:'t6'},{id:'H',label:'TEMA H',icon:'📊',color:'t7'},
+  {id:'I',label:'TEMA I',icon:'📌',color:'t8'},
 ];
 
-// ════════════════════════════════════════════════════════
-//  STORAGE
-// ════════════════════════════════════════════════════════
-function getScores() {
-  try { return JSON.parse(localStorage.getItem('nticx_m2_scores') || '{}'); } catch(e){ return {}; }
-}
-function saveScore(temaId, score) {
-  const s = getScores();
-  if (!s[temaId] || score > s[temaId]) s[temaId] = score;
-  try { localStorage.setItem('nticx_m2_scores', JSON.stringify(s)); } catch(e){}
-}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
-// ════════════════════════════════════════════════════════
-//  SHUFFLE
-// ════════════════════════════════════════════════════════
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
-  }
-  return a;
-}
-
-// ════════════════════════════════════════════════════════
-//  BUILD 16Q  ≥3 por módulo garantizadas
-// ════════════════════════════════════════════════════════
-function buildQuestions() {
-  const mods = Object.keys(MODS);
-  const byMod = {};
-  mods.forEach(m => { byMod[m] = shuffle(BANK.filter(q => q.mod === m)); });
-
-  let chosen = [];
-  // garantizar 3 por módulo (9 preguntas de base)
-  mods.forEach(m => { chosen.push(...byMod[m].slice(0,3)); });
-
-  // completar hasta 16 con el resto del banco
-  const usedQs = new Set(chosen.map(q => q.q));
-  let remaining = shuffle(BANK.filter(q => !usedQs.has(q.q)));
-  while (chosen.length < 16 && remaining.length > 0) {
-    chosen.push(remaining.shift());
-  }
-
+function buildQuestions(){
+  const mods=Object.keys(MODS);
+  const byMod={};
+  mods.forEach(m=>{byMod[m]=shuffle(BANK.filter(q=>q.mod===m));});
+  let chosen=[];
+  mods.forEach(m=>{chosen.push(...byMod[m].slice(0,3));});
+  const used=new Set(chosen.map(q=>q.q));
+  let rem=shuffle(BANK.filter(q=>!used.has(q.q)));
+  while(chosen.length<16&&rem.length>0)chosen.push(rem.shift());
   return shuffle(chosen);
 }
 
-// ════════════════════════════════════════════════════════
-//  [005] ESTADO DEL QUIZ
-// ════════════════════════════════════════════════════════
-let quizState = null;
-let currentTemaId = null;
-
-// ════════════════════════════════════════════════════════
-//  [006] RENDER HOME
-// ════════════════════════════════════════════════════════
-function renderHome() {
-  const scores = getScores();
-  const grid = document.getElementById('temas-grid');
-  grid.innerHTML = TEMA_DEFS.map(def => {
-    const best = scores[def.id];
-    const pct = best != null ? Math.round((best / 16) * 100) : null;
-    const isDone = pct != null && pct >= 60;
-    const badgeHtml = isDone
-      ? `<span class="t-badge done-badge">✓ ${pct}%</span>`
-      : (pct != null ? `<span class="t-badge" style="background:rgba(255,171,46,.15);color:var(--c4)">${pct}%</span>` : '');
-    const hiHtml = best != null ? `<div class="hi-badge">Mejor: ${best}/16</div>` : '';
-    return `
-      <div class="tema-card ${def.color}" onclick="startQuiz('${def.id}')">
-        ${badgeHtml}
-        <div class="t-icon">${def.icon}</div>
-        <div class="t-label">${def.label}</div>
-        <div class="t-sub">16 preguntas · 3 submódulos</div>
-        ${hiHtml}
-        <button class="print-btn" onclick="event.stopPropagation();openPrint('${def.id}')">🖨️ Imprimir</button>
-      </div>`;
+function renderHome(){
+  const scores=getLocalScores();
+  const grid=document.getElementById('temas-grid');
+  grid.innerHTML=TEMA_DEFS.map(def=>{
+    const best=scores[def.id];
+    const pct=best!=null?Math.round((best/16)*100):null;
+    const isDone=pct!=null&&pct>=60;
+    const badge=isDone
+      ?`<span class="t-badge done-badge">✓ ${pct}%</span>`
+      :(pct!=null?`<span class="t-badge" style="background:rgba(255,171,46,.15);color:var(--c4)">${pct}%</span>`:'');
+    const hi=best!=null?`<div class="hi-badge">Mejor: ${best}/16</div>`:'';
+    return `<div class="tema-card ${def.color}" onclick="startQuiz('${def.id}')">
+      ${badge}
+      <div class="t-icon">${def.icon}</div>
+      <div class="t-label">${def.label}</div>
+      <div class="t-sub">16 preguntas · 3 submódulos</div>
+      ${hi}
+      <button class="print-btn" onclick="event.stopPropagation();openPrint('${def.id}')">🖨️ Imprimir</button>
+    </div>`;
   }).join('');
 }
 
-// ════════════════════════════════════════════════════════
-//  START QUIZ
-// ════════════════════════════════════════════════════════
-function startQuiz(temaId) {
-  currentTemaId = temaId;
-  const def = TEMA_DEFS.find(t => t.id === temaId);
-  const questions = buildQuestions();
+let quizState=null;
 
-  quizState = {
-    questions,
-    idx: 0,
-    score: 0,
-    answers: [],
-    temaId,
-    byMod: {}
-  };
-  Object.keys(MODS).forEach(m => { quizState.byMod[m] = {correct:0, total:0}; });
-
-  document.getElementById('quiz-title').textContent = `${def.icon} ${def.label}`;
+function startQuiz(temaId){
+  const def=TEMA_DEFS.find(t=>t.id===temaId);
+  const questions=buildQuestions();
+  quizState={questions,idx:0,score:0,answers:[],temaId,byMod:{}};
+  Object.keys(MODS).forEach(m=>{quizState.byMod[m]={correct:0,total:0};});
+  document.getElementById('quiz-title').textContent=`${def.icon} ${def.label}`;
   showScreen('quiz');
   renderQuestion();
 }
 
-// ════════════════════════════════════════════════════════
-//  RENDER QUESTION
-// ════════════════════════════════════════════════════════
-function renderQuestion() {
-  const { questions, idx, score } = quizState;
-  const total = questions.length;
-
-  // progress
-  const pct = (idx / total) * 100;
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('prog-label').textContent = `Pregunta ${idx + 1} de ${total}`;
-  document.getElementById('quiz-score-live').textContent = score + ' pts';
-
-  // streak dots
-  const dots = questions.map((_, i) => {
-    if (i >= idx) return `<div class="streak-dot"></div>`;
-    const ok = quizState.answers[i];
-    return `<div class="streak-dot ${ok ? 'ok' : 'ko'}"></div>`;
+function renderQuestion(){
+  const{questions,idx,score}=quizState;
+  const total=questions.length;
+  document.getElementById('prog-fill').style.width=(idx/total*100)+'%';
+  document.getElementById('prog-label').textContent=`Pregunta ${idx+1} de ${total}`;
+  document.getElementById('quiz-score-live').textContent=score+' pts';
+  document.getElementById('streak-bar').innerHTML=questions.map((_,i)=>{
+    if(i>=idx)return'<div class="streak-dot"></div>';
+    return`<div class="streak-dot ${quizState.answers[i]?'ok':'ko'}"></div>`;
   }).join('');
-  document.getElementById('streak-bar').innerHTML = dots;
-
-  const q = questions[idx];
-  const letters = ['A','B','C','D'];
-  const modLabel = MODS[q.mod];
-
-  // shuffle opts para cada render
-  const displayOrder = [0,1,2,3];
-  const correctDisplayIdx = displayOrder.indexOf(q.ans);
-
-  const optsHtml = displayOrder.map((origIdx, di) => `
-    <button class="opt" onclick="selectAnswer(${di}, ${correctDisplayIdx})">
-      <span class="opt-letter">${letters[di]}</span>${q.opts[origIdx]}
-    </button>`).join('');
-
-  document.getElementById('q-container').innerHTML = `
+  const q=questions[idx];
+  const letters=['A','B','C','D'];
+  const correctDisplayIdx=q.ans;
+  const optsHtml=[0,1,2,3].map((origIdx,di)=>
+    `<button class="opt" onclick="selectAnswer(${di},${correctDisplayIdx})"><span class="opt-letter">${letters[di]}</span>${q.opts[origIdx]}</button>`
+  ).join('');
+  document.getElementById('q-container').innerHTML=`
     <div class="q-card">
-      <div class="q-mod">${modLabel}</div>
-      <div class="q-num-badge">Pregunta ${idx + 1}</div>
+      <div class="q-mod">${MODS[q.mod]}</div>
+      <div class="q-num-badge">Pregunta ${idx+1}</div>
       <div class="q-text">${q.q}</div>
-      <div class="opts" id="opts-wrap">${optsHtml}</div>
+      <div class="opts">${optsHtml}</div>
       <div class="feedback" id="feedback"></div>
     </div>`;
 }
 
-// ════════════════════════════════════════════════════════
-//  SELECT ANSWER
-// ════════════════════════════════════════════════════════
-function selectAnswer(selectedIdx, correctIdx) {
-  const opts = document.querySelectorAll('.opt');
-  opts.forEach(o => o.disabled = true);
-
-  const isCorrect = selectedIdx === correctIdx;
-  opts[selectedIdx].classList.add(isCorrect ? 'correct' : 'wrong');
-  if (!isCorrect) opts[correctIdx].classList.add('correct');
-
-  const q = quizState.questions[quizState.idx];
+function selectAnswer(selectedIdx,correctIdx){
+  const opts=document.querySelectorAll('.opt');
+  opts.forEach(o=>o.disabled=true);
+  const isCorrect=selectedIdx===correctIdx;
+  opts[selectedIdx].classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect)opts[correctIdx].classList.add('correct');
+  const q=quizState.questions[quizState.idx];
   quizState.answers.push(isCorrect);
   quizState.byMod[q.mod].total++;
-  if (isCorrect) {
-    quizState.score++;
-    quizState.byMod[q.mod].correct++;
-  }
-
-  const fb = document.getElementById('feedback');
-  fb.classList.add('show', isCorrect ? 'ok' : 'ko');
-  fb.textContent = isCorrect ? '✅ ¡Correcto!' : `❌ La respuesta correcta era: ${String.fromCharCode(65+correctIdx)}`;
-
-  if (isCorrect && quizState.score > 0 && quizState.score % 5 === 0) showCombo();
-
-  // next
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'next-btn';
-  const remaining = quizState.questions.length - quizState.idx - 1;
-  nextBtn.textContent = remaining > 0 ? 'Siguiente →' : 'Ver resultado';
-  nextBtn.onclick = nextQuestion;
-  fb.after(nextBtn);
+  if(isCorrect){quizState.score++;quizState.byMod[q.mod].correct++;}
+  const fb=document.getElementById('feedback');
+  fb.classList.add('show',isCorrect?'ok':'ko');
+  fb.textContent=isCorrect?'✅ ¡Correcto!':`❌ La respuesta correcta era: ${String.fromCharCode(65+correctIdx)}`;
+  if(isCorrect&&quizState.score>0&&quizState.score%5===0)showCombo();
+  const nb=document.createElement('button');
+  nb.className='next-btn';
+  nb.textContent=(quizState.questions.length-quizState.idx-1)>0?'Siguiente →':'Ver resultado';
+  nb.onclick=nextQuestion;
+  fb.after(nb);
 }
 
-function nextQuestion() {
+function nextQuestion(){
   quizState.idx++;
-  if (quizState.idx >= quizState.questions.length) {
-    showResult();
+  if(quizState.idx>=quizState.questions.length){
+    // Si ya está logueado → resultado directo
+    if(currentUser){
+      showResult();
+    } else {
+      // Mostrar modal obligatorio ANTES del resultado
+      const hoy=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+      const scoreData={
+        tema:quizState.temaId,
+        puntaje:quizState.score,
+        total:quizState.questions.length,
+        fecha:hoy
+      };
+      pendingScore=scoreData;
+      document.getElementById('auth-sub').textContent='¡Terminaste! Creá tu cuenta o ingresá para ver tus resultados y aparecer en el ranking.';
+      // ocultar skip — es obligatorio
+      document.getElementById('auth-skip').style.display='none';
+      document.getElementById('auth-overlay').classList.add('open');
+      switchAuthTab('register');
+    }
   } else {
     renderQuestion();
   }
 }
 
-// ════════════════════════════════════════════════════════
-//  COMBO FLASH
-// ════════════════════════════════════════════════════════
-function showCombo() {
-  const msgs = ['🔥 En racha!','⚡ Combo!','💥 ¡Imparable!','🚀 ¡Excelente!'];
-  const el = document.createElement('div');
-  el.className = 'combo-flash';
-  el.style.color = 'var(--c4)';
-  el.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+function showCombo(){
+  const msgs=['🔥 En racha!','⚡ Combo!','💥 ¡Imparable!','🚀 ¡Excelente!'];
+  const el=document.createElement('div');
+  el.className='combo-flash';el.style.color='var(--c4)';
+  el.textContent=msgs[Math.floor(Math.random()*msgs.length)];
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 900);
+  setTimeout(()=>el.remove(),900);
 }
 
-// ════════════════════════════════════════════════════════
-//  SHOW RESULT
-// ════════════════════════════════════════════════════════
-function showResult() {
-  const { score, questions, temaId, byMod } = quizState;
-  const total = questions.length;
-  const pct = score / total;
+async function showResult(){
+  const{score,questions,temaId,byMod}=quizState;
+  const total=questions.length;
+  const pct=score/total;
+  // guardar local siempre
+  saveLocalScore(temaId,score);
+  renderHome();
 
-  saveScore(temaId, score);
+  let emoji,title,stars,msg;
+  if(pct>=0.875){emoji='🏆';title='¡Excelente!';stars='⭐⭐⭐';msg='Dominás los contenidos del Módulo 2.';}
+  else if(pct>=0.75){emoji='🎉';title='¡Muy bien!';stars='⭐⭐⭐';msg='Gran performance. Repasá los errores para mejorar.';}
+  else if(pct>=0.625){emoji='👍';title='Bien';stars='⭐⭐';msg='Buen trabajo, pero hay temas para repasar.';}
+  else if(pct>=0.5){emoji='📖';title='Regular';stars='⭐⭐';msg='La mitad bien. Recomendamos repasar los tres submódulos.';}
+  else{emoji='🔁';title='A repasar';stars='⭐';msg='Volvé a repasar el módulo y volvé a intentarlo.';}
 
-  let emoji, title, stars, msg;
-  if (pct >= 0.875) { emoji='🏆'; title='¡Excelente!'; stars='⭐⭐⭐'; msg='Dominás los contenidos del Módulo 2. ¡Seguí así!'; }
-  else if (pct >= 0.75) { emoji='🎉'; title='¡Muy bien!'; stars='⭐⭐⭐'; msg='Gran performance. Repasá los errores para el siguiente nivel.'; }
-  else if (pct >= 0.625) { emoji='👍'; title='Bien'; stars='⭐⭐'; msg='Buen trabajo, pero hay algunos temas para repasar.'; }
-  else if (pct >= 0.5) { emoji='📖'; title='Regular'; stars='⭐⭐'; msg='La mitad bien. Recomendamos repasar los tres submódulos.'; }
-  else { emoji='🔁'; title='A repasar'; stars='⭐'; msg='Volvé a repasar el módulo. Cada intento tiene preguntas distintas.'; }
-
-  // review incorrectas
-  const incorrectas = questions.filter((_, i) => !quizState.answers[i]);
-  const reviewHtml = incorrectas.length > 0 ? `
+  const incorrectas=questions.filter((_,i)=>!quizState.answers[i]);
+  const reviewHtml=incorrectas.length>0?`
     <div class="review-box">
       <div class="review-title">📚 Temas para repasar</div>
-      ${incorrectas.slice(0,5).map(q => `<div class="review-item">${q.q}</div>`).join('')}
-      ${incorrectas.length > 5 ? `<div style="font-size:.8rem;color:var(--muted);margin-top:.4rem">+ ${incorrectas.length-5} más</div>` : ''}
-    </div>` : '';
+      ${incorrectas.slice(0,5).map(q=>`<div class="review-item">${q.q}</div>`).join('')}
+      ${incorrectas.length>5?`<div style="font-size:.8rem;color:var(--muted);margin-top:.4rem">+ ${incorrectas.length-5} más</div>`:''}
+    </div>`:'';
 
-  // breakdown por submódulo
-  const breakdownHtml = Object.entries(byMod).map(([m, d]) => {
-    const mpct = d.total > 0 ? Math.round((d.correct/d.total)*100) : 0;
-    const mcolor = mpct >= 70 ? 'var(--c3)' : mpct >= 50 ? 'var(--c4)' : 'var(--c5)';
-    return `<div class="brow">
+  const breakdownHtml=Object.entries(byMod).map(([m,d])=>{
+    const mp=d.total>0?Math.round((d.correct/d.total)*100):0;
+    const mc=mp>=70?'var(--c3)':mp>=50?'var(--c4)':'var(--c5)';
+    return`<div class="brow">
       <div class="brow-name">${MODS[m]}</div>
-      <div class="brow-score" style="color:${mcolor}">${d.correct}/${d.total}</div>
-      <div class="brow-bar-wrap"><div class="brow-bar" style="width:${mpct}%;background:${mcolor}"></div></div>
+      <div class="brow-score" style="color:${mc}">${d.correct}/${d.total}</div>
+      <div class="brow-bar-wrap"><div class="brow-bar" style="width:${mp}%;background:${mc}"></div></div>
     </div>`;
   }).join('');
 
-  const scores = getScores();
-  const prevBest = scores[temaId] || score;
+  const best=getLocalScores()[temaId]||score;
+  const scoreData={tema:temaId,puntaje:score,total,fecha:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'})};
 
-  document.getElementById('result-card').innerHTML = `
+  // determinar mensaje de guardado
+  let saveHtml='';
+  if(currentUser){
+    await uploadScore(scoreData);
+    saveHtml=`<div style="background:rgba(81,212,110,.08);border:1px solid rgba(81,212,110,.2);border-radius:8px;padding:.6rem .9rem;font-size:.82rem;color:var(--c3);margin-bottom:1rem">☁️ Puntaje guardado en el ranking</div>`;
+  }else if(localStorage.getItem(LS_AUTH_DONE)==='1'){
+    saveHtml=`<div style="background:rgba(255,171,46,.08);border:1px solid rgba(255,171,46,.2);border-radius:8px;padding:.6rem .9rem;font-size:.82rem;color:var(--c4);margin-bottom:1rem;cursor:pointer" onclick="openAuth('login')">⚠️ Sesión no iniciada — <u>ingresá para guardar este puntaje</u></div>`;
+  }else{
+    saveHtml=`<div style="background:rgba(139,109,255,.08);border:1px solid rgba(139,109,255,.25);border-radius:8px;padding:.6rem .9rem;font-size:.82rem;color:var(--c2);margin-bottom:1rem;cursor:pointer" onclick="openAuthForScore(${JSON.stringify(scoreData).replace(/"/g,'&quot;')})">📋 <u>Creá tu cuenta para guardar este puntaje en el ranking</u></div>`;
+    // disparar modal automático (solo si no lo hizo antes)
+    setTimeout(()=>openAuthForScore(scoreData),800);
+  }
+
+  document.getElementById('result-card').innerHTML=`
     <div class="result-emoji">${emoji}</div>
     <div class="result-title">${title}</div>
-    <div class="score-display">
-      <span class="score-num">${score}</span>
-      <span class="score-den"> / ${total}</span>
-    </div>
+    <div class="score-display"><span class="score-num">${score}</span><span class="score-den"> / ${total}</span></div>
     <div class="stars">${stars}</div>
     <div class="result-msg">${msg}</div>
     <div class="best-row">
       <div class="best-chip"><strong>${score}</strong>Este intento</div>
-      <div class="best-chip"><strong>${prevBest}</strong>Mejor puntaje</div>
+      <div class="best-chip"><strong>${best}</strong>Mejor puntaje</div>
       <div class="best-chip"><strong>${Math.round(pct*100)}%</strong>Porcentaje</div>
     </div>
-    <div class="breakdown">
-      <div class="breakdown-title">Desglose por submódulo</div>
-      ${breakdownHtml}
-    </div>
+    <div class="breakdown"><div class="breakdown-title">Desglose por submódulo</div>${breakdownHtml}</div>
     ${reviewHtml}
+    ${saveHtml}
     <div class="result-btns">
       <button class="btn-retry" onclick="startQuiz('${temaId}')">🔄 Reintentar</button>
       <button class="btn-home" onclick="goHome()">🏠 Elegir tema</button>
     </div>`;
-
   showScreen('result');
-  if (pct >= 0.75) launchConfetti();
+  if(pct>=0.75)launchConfetti();
 }
 
-// ════════════════════════════════════════════════════════
-//  CONFETTI
-// ════════════════════════════════════════════════════════
-function launchConfetti() {
-  const container = document.getElementById('confetti-container');
-  const colors = ['#00d4c8','#8b6dff','#51d46e','#ffab2e','#ff5a7a','#fff'];
-  for (let i = 0; i < 120; i++) {
-    const el = document.createElement('div');
-    el.className = 'confetti-piece';
-    const size = Math.random()*9+4;
-    el.style.cssText = `
-      left:${Math.random()*100}%;
-      background:${colors[Math.floor(Math.random()*colors.length)]};
-      width:${size}px;height:${size}px;
-      animation-delay:${Math.random()*1.8}s;
-      animation-duration:${Math.random()*2+2.5}s;
-      border-radius:${Math.random()>.5?'50%':'2px'};`;
-    container.appendChild(el);
+// [008] RANKING LOGIC
+function openRanking(){
+  document.getElementById('ranking-overlay').classList.add('open');
+  loadTop10();
+}
+function closeRanking(){document.getElementById('ranking-overlay').classList.remove('open');}
+
+function switchRankTab(tab){
+  document.getElementById('tab-top10').classList.toggle('active',tab==='top10');
+  document.getElementById('tab-docente').classList.toggle('active',tab==='docente');
+  document.getElementById('tab-top10-content').style.display=tab==='top10'?'block':'none';
+  document.getElementById('tab-docente-content').style.display=tab==='docente'?'block':'none';
+  if(tab==='top10')loadTop10();
+  if(tab==='docente')renderDocenteLogin();
+}
+
+async function loadTop10(){
+  const el=document.getElementById('tab-top10-content');
+  el.innerHTML=`<div class="ranking-loading"><div class="rk-spinner"></div><div>Cargando ranking…</div></div>`;
+  try{
+    const data=await apiGet({action:'getRanking'});
+    const ranking=data.ranking||[];
+    if(!ranking.length){el.innerHTML='<div class="ranking-empty">🏁 Todavía no hay puntajes. ¡Sé el primero!</div>';return;}
+    const posIcons=['🥇','🥈','🥉'];
+    const posCols=['gold','silver','bronze'];
+    el.innerHTML=`
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:1rem">Suma de mejores puntajes · actualizado en tiempo real</div>
+      <div class="top10-list">
+        ${ranking.map((u,i)=>{
+          const isMe=currentUser&&u.mail===currentUser.mail;
+          return`<div class="top10-item${isMe?' me':''}">
+            <div class="top10-pos ${i<3?posCols[i]:''}">${i<3?posIcons[i]:i+1}</div>
+            <div>
+              <div class="top10-name">${u.nombre}${isMe?' <span style="color:var(--c4);font-size:.7rem">(vos)</span>':''}</div>
+              <div class="top10-sub">${u.temas} tema${u.temas!==1?'s':''} completado${u.temas!==1?'s':''}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="top10-pts">${u.total} pts</div>
+              <div style="font-size:.72rem;color:var(--muted)">${Math.round(u.total/Math.max(u.temas,1)*100/16)}% prom.</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  }catch(e){el.innerHTML='<div class="ranking-empty">⚠️ No se pudo cargar el ranking.</div>';}
+}
+
+function renderDocenteLogin(){
+  document.getElementById('tab-docente-content').innerHTML=`
+    <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Ingresá la contraseña docente para ver todos los datos.</div>
+    <div class="doc-pass-wrap">
+      <input type="password" id="doc-pass" placeholder="Contraseña docente" onkeydown="if(event.key==='Enter')loadDocente()">
+      <button onclick="loadDocente()">Ver →</button>
+    </div>
+    <div id="doc-err" style="color:var(--c5);font-size:.82rem;margin-top:.4rem;display:none">Contraseña incorrecta.</div>`;
+}
+
+async function loadDocente(){
+  const pass=document.getElementById('doc-pass').value.trim();
+  const el=document.getElementById('tab-docente-content');
+  el.innerHTML=`<div class="ranking-loading"><div class="rk-spinner"></div><div>Cargando…</div></div>`;
+  try{
+    const data=await apiGet({action:'getAll',pass});
+    if(data.error){renderDocenteLogin();document.getElementById('doc-err').style.display='block';return;}
+    const puntajes=(data.puntajes||[]).slice(1);
+    const usuarios=(data.usuarios||[]).slice(1);
+    const alumnos=new Set(puntajes.map(r=>r[0])).size;
+    const total=puntajes.length;
+    const avg=total?Math.round(puntajes.reduce((s,r)=>s+Number(r[3]),0)/total*10)/10:0;
+    el.innerHTML=`
+      <div class="doc-stat-row">
+        <div class="doc-stat"><strong>${usuarios.length}</strong><span>Registrados</span></div>
+        <div class="doc-stat"><strong>${alumnos}</strong><span>Con puntajes</span></div>
+        <div class="doc-stat"><strong>${total}</strong><span>Intentos</span></div>
+        <div class="doc-stat"><strong>${avg}</strong><span>Prom. pts</span></div>
+      </div>
+      <div style="font-family:var(--fh);font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">Puntajes</div>
+      <div class="doc-table-wrap">
+        <table class="doc-table">
+          <thead><tr><th>Alumno/a</th><th>Tema</th><th>Puntaje</th><th>%</th><th>Fecha</th></tr></thead>
+          <tbody>${puntajes.map(r=>{
+            const pts=Number(r[3]),tot=Number(r[4])||16;
+            const p=Math.round(pts/tot*100);
+            const c=p>=80?'var(--c3)':p>=60?'var(--c4)':'var(--c5)';
+            return`<tr><td><strong>${r[1]}</strong><br><span style="font-size:.7rem;color:var(--muted)">${r[0]}</span></td><td><strong>Tema ${r[2]}</strong></td><td style="font-family:var(--fh);font-weight:800;color:${c}">${pts}/${tot}</td><td style="color:${c}">${p}%</td><td>${r[5]||'—'}</td></tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+      <div style="margin-top:1.25rem;font-family:var(--fh);font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">Usuarios registrados</div>
+      <div class="doc-table-wrap">
+        <table class="doc-table">
+          <thead><tr><th>Nombre</th><th>Mail</th><th>Registro</th><th>Bloqueado</th></tr></thead>
+          <tbody>${usuarios.map(r=>`<tr><td><strong>${r[1]}</strong></td><td>${r[0]}</td><td>${r[3]||'—'}</td><td>${r[4]?'🔴 Sí':'🟢 No'}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+      <div style="text-align:center;margin-top:1rem">
+        <button onclick="renderDocenteLogin()" style="background:var(--card2);border:1px solid var(--border);border-radius:99px;padding:.4rem 1rem;color:var(--muted);font-family:var(--fh);font-size:.75rem;cursor:pointer">🔒 Cerrar sesión docente</button>
+      </div>`;
+  }catch(e){el.innerHTML='<div class="ranking-empty">⚠️ Error al cargar datos.</div>';}
+}
+
+// [009] PRINT / PDF
+function launchConfetti(){
+  const c=document.getElementById('confetti-container');
+  const cols=['#00d4c8','#8b6dff','#51d46e','#ffab2e','#ff5a7a','#fff'];
+  for(let i=0;i<120;i++){
+    const el=document.createElement('div');el.className='confetti-piece';
+    const s=Math.random()*9+4;
+    el.style.cssText=`left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};width:${s}px;height:${s}px;animation-delay:${Math.random()*1.8}s;animation-duration:${Math.random()*2+2.5}s;border-radius:${Math.random()>.5?'50%':'2px'};`;
+    c.appendChild(el);
   }
-  setTimeout(() => { container.innerHTML = ''; }, 7000);
+  setTimeout(()=>{c.innerHTML='';},7000);
 }
 
-// ════════════════════════════════════════════════════════
-//  NAVIGATION
-// ════════════════════════════════════════════════════════
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
+const LETTERS=['A','B','C','D'];
+function buildPrintContent(def,questions){
+  const bm={};Object.keys(MODS).forEach(m=>{bm[m]=[];});
+  questions.forEach(q=>bm[q.mod].push(q));
+  let qG=0,ak=[],sec='';
+  Object.keys(MODS).forEach(mod=>{
+    const qs=bm[mod];if(!qs.length)return;
+    let qh='';
+    qs.forEach(q=>{
+      qG++;ak.push({num:qG,letter:LETTERS[q.ans]});
+      const oh=[0,1,2,3].map((oi,di)=>`<div class="pc-opt"><span class="pc-opt-letter">${LETTERS[di]}</span><span>${q.opts[oi]}</span></div>`).join('');
+      qh+=`<div class="pc-q"><div class="pc-q-text"><span class="pc-q-num">${qG}.</span>${q.q}</div><div class="pc-opts">${oh}</div></div>`;
+    });
+    sec+=`<div class="pc-mod-section"><div class="pc-mod-label">${MODS[mod]}</div>${qh}</div>`;
+  });
+  const now=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  return`<div class="pc-header"><h2>${def.icon} Simulacro NTICx 4° Año — Módulo 2 · ${def.label}</h2><p>Selección múltiple — marcá la opción correcta</p><div class="pc-meta"><span>📋 16 preguntas</span><span>⏱️ 30 min</span><span>📅 ${now}</span><span>👤 Nombre: ___________________________</span></div></div>${sec}<div class="pc-answer-key"><h3>🔑 Clave de respuestas</h3><div class="pc-answers-grid">${ak.map(a=>`<div class="pc-ans-item"><div class="an">${a.num}</div><div class="av">${a.letter}</div></div>`).join('')}</div></div><div class="pc-footer">NTICx 4° Año · Módulo 2 · Generado automáticamente</div>`;
+}
+function openPrint(temaId){
+  const def=TEMA_DEFS.find(t=>t.id===temaId);
+  document.getElementById('pm-title').textContent=`${def.icon} ${def.label} — Vista previa`;
+  document.getElementById('pm-body').innerHTML=`<div class="pc-tema-block" style="page-break-after:always">${buildPrintContent(def,buildQuestions())}</div>`;
+  document.getElementById('print-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function openPrintAll(){
+  document.getElementById('pm-title').textContent='🖨️ Todos los temas (A–I)';
+  document.getElementById('pm-body').innerHTML=TEMA_DEFS.map(def=>`<div class="pc-tema-block" style="page-break-after:always">${buildPrintContent(def,buildQuestions())}</div>`).join('');
+  document.getElementById('print-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closePrint(){document.getElementById('print-overlay').classList.remove('open');document.body.style.overflow='';}
+
+// [010] NAVEGACIÓN / INIT
+function showScreen(id){
+  ['home','quiz','result'].forEach(s=>{
+    const el=document.getElementById('screen-'+s);
+    if(el)el.classList.toggle('active',s===id);
+  });
   window.scrollTo({top:0,behavior:'smooth'});
 }
+function goHome(){renderHome();showScreen('home');}
 
-function goHome() {
-  renderHome();
-  showScreen('home');
-}
+// Enter en auth forms
+document.getElementById('reg-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doRegister();});
+document.getElementById('log-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-// ════════════════════════════════════════════════════════
-//  [007] PRINT / PDF
-// ════════════════════════════════════════════════════════
-const LETTERS = ['A','B','C','D'];
-
-function buildPrintContent(def, questions) {
-  const byMod = {};
-  Object.keys(MODS).forEach(m => { byMod[m] = []; });
-  questions.forEach(q => byMod[q.mod].push(q));
-
-  let qGlobal = 0;
-  const answerKey = [];
-  let sectionsHtml = '';
-
-  Object.keys(MODS).forEach(mod => {
-    const qs = byMod[mod];
-    if (!qs.length) return;
-    let qsHtml = '';
-    qs.forEach(q => {
-      qGlobal++;
-      const displayOrder = [0,1,2,3];
-      const correctDisplayIdx = displayOrder.indexOf(q.ans);
-      answerKey.push({ num: qGlobal, letter: LETTERS[correctDisplayIdx] });
-      const optsHtml = displayOrder.map((origIdx, displayPos) =>
-        `<div class="pc-opt">
-          <span class="pc-opt-letter">${LETTERS[displayPos]}</span>
-          <span>${q.opts[origIdx]}</span>
-        </div>`
-      ).join('');
-      qsHtml += `
-        <div class="pc-q">
-          <div class="pc-q-text"><span class="pc-q-num">${qGlobal}.</span>${q.q}</div>
-          <div class="pc-opts">${optsHtml}</div>
-        </div>`;
-    });
-    sectionsHtml += `
-      <div class="pc-mod-section">
-        <div class="pc-mod-label">${MODS[mod]}</div>
-        ${qsHtml}
-      </div>`;
-  });
-
-  const akHtml = answerKey.map(a =>
-    `<div class="pc-ans-item"><div class="an">${a.num}</div><div class="av">${a.letter}</div></div>`
-  ).join('');
-
-  const now = new Date().toLocaleDateString('es-AR', {day:'2-digit',month:'2-digit',year:'numeric'});
-
-  return `
-    <div class="pc-header">
-      <h2>${def.icon} Simulacro NTICx 4° Año — Módulo 2 · ${def.label}</h2>
-      <p>Selección múltiple — marcá la opción correcta</p>
-      <div class="pc-meta">
-        <span>📋 16 preguntas</span>
-        <span>⏱️ Tiempo sugerido: 30 min</span>
-        <span>📅 ${now}</span>
-        <span>👤 Nombre: ___________________________</span>
-      </div>
-    </div>
-    ${sectionsHtml}
-    <div class="pc-answer-key">
-      <h3>🔑 Clave de respuestas</h3>
-      <div class="pc-answers-grid">${akHtml}</div>
-    </div>
-    <div class="pc-footer">NTICx 4° Año · Módulo 2 · Generado automáticamente</div>
-  `;
-}
-
-function openPrint(temaId) {
-  const def = TEMA_DEFS.find(t => t.id === temaId);
-  const questions = buildQuestions();
-  const bodyHtml = buildPrintContent(def, questions);
-  document.getElementById('pm-title').textContent = `${def.icon} ${def.label} — Vista previa para imprimir`;
-  document.getElementById('pm-body').innerHTML = `<div class="pc-tema-block" style="page-break-after:always;break-after:page">${bodyHtml}</div>`;
-  document.getElementById('print-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function openPrintAll() {
-  const allHtml = TEMA_DEFS.map(def => {
-    const questions = buildQuestions();
-    const content = buildPrintContent(def, questions);
-    return `<div class="pc-tema-block" style="page-break-after:always;break-after:page">${content}</div>`;
-  }).join('');
-  document.getElementById('pm-title').textContent = '🖨️ Todos los temas (A–I) — Vista previa para imprimir';
-  document.getElementById('pm-body').innerHTML = allHtml;
-  document.getElementById('print-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closePrint() {
-  document.getElementById('print-overlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-document.getElementById('print-overlay').addEventListener('click', function(e) {
-  if (e.target === this) closePrint();
-});
-
-// [008] INICIALIZACIÓN
+// INIT
+loadSavedUser();
 renderHome();
 </script>
 </body>
