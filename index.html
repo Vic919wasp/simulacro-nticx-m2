@@ -994,6 +994,7 @@ async function loadDocente(){
     if(data.error){renderDocenteLogin();document.getElementById('doc-err').style.display='block';return;}
     const puntajes=(data.puntajes||[]).slice(1);
     const usuarios=(data.usuarios||[]).slice(1);
+    const TEMAS=['A','B','C','D','E','F','G','H','I'];
 
     // Agrupar por alumno
     const porAlumno={};
@@ -1007,8 +1008,58 @@ async function loadDocente(){
 
     const totalIntentos=puntajes.length;
     const avgPts=totalIntentos?Math.round(puntajes.reduce((s,r)=>s+Number(r[3]),0)/totalIntentos*10)/10:0;
+    const alumnos=Object.values(porAlumno);
 
-    // Generar mini sparkline SVG inline
+    // ── SEMÁFORO por tema ──────────────────────────────
+    function semaforo(pts){
+      if(pts==null)return`<td style="text-align:center;padding:.4rem .3rem;font-size:.85rem">—</td>`;
+      const pct=Math.round(pts/16*100);
+      const emoji=pct>=80?'🟢':pct>=60?'🟡':'🔴';
+      const c=pct>=80?'#51d46e':pct>=60?'#ffab2e':'#ff5a7a';
+      return`<td style="text-align:center;padding:.4rem .3rem">
+        <div style="font-size:1rem">${emoji}</div>
+        <div style="font-family:var(--fh);font-size:.7rem;font-weight:800;color:${c}">${pts}/16</div>
+      </td>`;
+    }
+
+    const matrizHtml=`
+      <div style="overflow-x:auto;margin-bottom:1.5rem">
+        <table style="border-collapse:collapse;width:100%;min-width:600px">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:.5rem .75rem;font-family:var(--fh);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;border-bottom:1px solid var(--border)">Alumno/a</th>
+              ${TEMAS.map(t=>`<th style="text-align:center;padding:.5rem .4rem;font-family:var(--fh);font-size:.72rem;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">T.${t}</th>`).join('')}
+              <th style="text-align:center;padding:.5rem .4rem;font-family:var(--fh);font-size:.72rem;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Prom.</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${alumnos.map(a=>{
+              const vals=TEMAS.map(t=>a.mejores[t]!=null?a.mejores[t]:null);
+              const completados=vals.filter(v=>v!=null);
+              const prom=completados.length?Math.round(completados.reduce((s,v)=>s+v,0)/completados.length):null;
+              const promC=prom!=null?(prom/16>=0.8?'#51d46e':prom/16>=0.6?'#ffab2e':'#ff5a7a'):'var(--muted)';
+              return`<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:.5rem .75rem;white-space:nowrap">
+                  <div style="font-family:var(--fh);font-weight:800;font-size:.85rem">${a.nombre}</div>
+                  <div style="font-size:.68rem;color:var(--muted)">${completados.length}/9 temas</div>
+                </td>
+                ${vals.map(v=>semaforo(v)).join('')}
+                <td style="text-align:center;padding:.4rem .3rem">
+                  ${prom!=null?`<div style="font-family:var(--fh);font-weight:800;font-size:.85rem;color:${promC}">${prom}/16</div>`:'<span style="color:var(--muted)">—</span>'}
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:1rem;margin-bottom:1.5rem;font-size:.78rem;color:var(--muted)">
+        <span>🟢 ≥80% (13-16 pts)</span>
+        <span>🟡 60-79% (10-12 pts)</span>
+        <span>🔴 &lt;60% (0-9 pts)</span>
+        <span>— Sin intentar</span>
+      </div>`;
+
+    // ── SPARKLINE ──────────────────────────────────────
     function sparkline(intentos){
       if(intentos.length<2)return'<span style="color:var(--muted);font-size:.7rem">—</span>';
       const vals=intentos.map(i=>i.pts);
@@ -1028,12 +1079,15 @@ async function loadDocente(){
       </svg>`;
     }
 
-    // Cards por alumno con historial expandible
-    const alumnosHtml=Object.values(porAlumno).map((a,idx)=>{
+    // ── CARDS por alumno ───────────────────────────────
+    const alumnosHtml=alumnos.map((a,idx)=>{
       const mejor=Math.max(...Object.values(a.mejores));
       const temasOk=Object.keys(a.mejores).length;
       const promMejor=temasOk?Math.round(Object.values(a.mejores).reduce((s,v)=>s+v,0)/temasOk):0;
       const evol=sparkline(a.intentos);
+      // temas flojos
+      const flojos=TEMAS.filter(t=>a.mejores[t]!=null&&a.mejores[t]/16<0.6);
+      const flojoHtml=flojos.length?`<div style="margin-top:.5rem;font-size:.75rem;color:var(--c5)">🔴 Temas flojos: <strong>${flojos.map(t=>'T.'+t).join(', ')}</strong></div>`:'';
       const histHtml=a.intentos.map(i=>{
         const c=i.pct>=80?'#51d46e':i.pct>=60?'#ffab2e':'#ff5a7a';
         return`<tr style="font-size:.78rem">
@@ -1050,10 +1104,9 @@ async function loadDocente(){
             <div style="flex:1;min-width:0">
               <div style="font-family:var(--fh);font-weight:800;font-size:.9rem">${a.nombre}</div>
               <div style="font-size:.7rem;color:var(--muted)">${a.mail}</div>
+              ${flojoHtml}
             </div>
-            <div style="text-align:center;padding:0 .5rem">
-              ${evol}
-            </div>
+            <div style="text-align:center;padding:0 .5rem">${evol}</div>
             <div style="text-align:right;flex-shrink:0">
               <div style="font-family:var(--fh);font-weight:800;color:var(--c4);font-size:1rem">${promMejor}/16</div>
               <div style="font-size:.7rem;color:var(--muted)">${temasOk} tema${temasOk!==1?'s':''} · ${a.intentos.length} intentos</div>
@@ -1072,7 +1125,7 @@ async function loadDocente(){
               <tbody>${histHtml}</tbody>
             </table>
             <div style="margin-top:.6rem;font-size:.78rem;color:var(--muted)">
-              🏆 Mejor puntaje general: <strong style="color:var(--c4)">${mejor}/16</strong> · 
+              🏆 Mejor puntaje: <strong style="color:var(--c4)">${mejor}/16</strong> · 
               Promedio mejores: <strong style="color:var(--c4)">${promMejor}/16</strong>
             </div>
           </div>
@@ -1082,15 +1135,22 @@ async function loadDocente(){
     el.innerHTML=`
       <div class="doc-stat-row">
         <div class="doc-stat"><strong>${usuarios.length}</strong><span>Registrados</span></div>
-        <div class="doc-stat"><strong>${Object.keys(porAlumno).length}</strong><span>Con puntajes</span></div>
+        <div class="doc-stat"><strong>${alumnos.length}</strong><span>Con puntajes</span></div>
         <div class="doc-stat"><strong>${totalIntentos}</strong><span>Intentos</span></div>
         <div class="doc-stat"><strong>${avgPts}</strong><span>Prom. pts</span></div>
       </div>
+
       <div style="font-family:var(--fh);font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">
-        Evolución por alumno <span style="font-weight:400;text-transform:none;font-family:var(--fb)">— click para ver historial</span>
+        🗺️ Mapa de rendimiento por tema
+      </div>
+      ${matrizHtml}
+
+      <div style="font-family:var(--fh);font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">
+        📈 Evolución por alumno <span style="font-weight:400;text-transform:none;font-family:var(--fb)">— click para ver historial</span>
       </div>
       ${alumnosHtml||'<div class="ranking-empty">📭 Todavía no hay puntajes registrados.</div>'}
-      <div style="margin-top:1.25rem;font-family:var(--fh);font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">Usuarios registrados</div>
+
+      <div style="margin-top:1.25rem;font-family:var(--fh);font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">👥 Usuarios registrados</div>
       <div class="doc-table-wrap">
         <table class="doc-table">
           <thead><tr><th>Nombre</th><th>Mail</th><th>Registro</th><th>Bloqueado</th></tr></thead>
