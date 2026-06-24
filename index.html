@@ -312,6 +312,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="mod-chip">🌐 Redes Digitales</div>
       <div class="mod-chip">🔍 Alfabetización Informacional</div>
       <div class="mod-chip">🇦🇷 Agenda Digital Argentina</div>
+      <div class="mod-chip">💞 ESI y Ciudadanía Digital</div>
     </div>
     <div class="temas-grid" id="temas-grid"></div>
     <div style="text-align:center;margin-top:1.75rem">
@@ -407,7 +408,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
 <!-- [004] BANCO DE PREGUNTAS -->
 <script>
-const MODS={m1:'🌐 Redes Digitales',m2:'🔍 Alfabetización Informacional',m3:'🇦🇷 Agenda Digital Argentina'};
+const MODS={m1:'🌐 Redes Digitales',m2:'🔍 Alfabetización Informacional',m3:'🇦🇷 Agenda Digital Argentina',m4:'💞 ESI y Ciudadanía Digital'};
 const BANK=[
 {mod:'m1',q:'¿Qué es una red digital?',opts:['Un programa para enviar correos','La conexión de dos o más dispositivos para compartir recursos e intercambiar información','Un tipo de antena para datos móviles','El conjunto de cables dentro de una PC'],ans:1},
 {mod:'m1',q:'¿Qué diferencia a una LAN de una WAN?',opts:['La velocidad de los procesadores','El alcance geográfico de la red','El sistema operativo usado','La cantidad de cables'],ans:1},
@@ -496,6 +497,37 @@ const BANK=[
 {mod:'m3',q:'Compará Conectar Igualdad con REFEFO: ¿abordan la misma dimensión de la brecha?',opts:['Sí, ambas abordan lo mismo','No: Conectar Igualdad ataca la brecha de dispositivos y uso; REFEFO la infraestructura','Ambas solo abordan la brecha de uso','REFEFO es más completa porque incluye dispositivos'],ans:1},
 {mod:'m3',q:'Un alumno tiene PC de Conectar Igualdad pero no tiene Internet en casa. ¿Qué brecha sigue sin resolverse?',opts:['Brecha de uso','Brecha de acceso a la conectividad','Brecha de calidad del dispositivo','Brecha generacional'],ans:1},
 {mod:'m3',q:'¿Qué diferencia hay entre acceso a Internet e inclusión digital plena?',opts:['Son lo mismo','El acceso es condición necesaria, pero la inclusión plena también requiere habilidades y contenidos relevantes','La inclusión plena solo depende de la velocidad','El acceso es más importante que la inclusión'],ans:1},
+// ─── MÓDULO 4 — ESI Y CIUDADANÍA DIGITAL ───
+{mod:'m4',q:'Según la ESI, el consentimiento digital es…',opts:['Un permiso que, una vez dado, vale para siempre','Un acuerdo libre, informado y revocable en cualquier momento','Algo que solo aplica a encuentros presenciales','Innecesario entre personas que se conocen bien'],ans:1},
+{mod:'m4',q:'¿Cuál de estas es una señal de alerta típica de grooming?',opts:['Un adulto que pide que la conversación sea secreta','Alguien que respeta cuando tardás en responder','Una persona que acepta sin enojarse cuando decís no','Un contacto que se presenta con su nombre real'],ans:0},
+{mod:'m4',q:'¿Qué ley argentina incorpora el grooming como delito en el Código Penal?',opts:['Ley 26.485','Ley 26.150','Ley 26.904','Ley 27.736'],ans:2},
+{mod:'m4',q:'La Ley Olimpia (27.736) reconoce como violencia digital de género, entre otras cosas…',opts:['Cambiar la contraseña del WiFi seguido','La difusión de contenido íntimo sin consentimiento','Tener muchas redes sociales','Usar el celular más de 3 horas por día'],ans:1},
+{mod:'m4',q:'Si a alguien le difunden una foto íntima sin su permiso, lo más protector es…',opts:['Reenviarla también, ya que todos la vieron','No hacer nada para no meterse en problemas','Avisarle a la persona afectada y buscar un adulto de confianza o las líneas oficiales','Esperar a que se olvide solo'],ans:2},
+{mod:'m4',q:'¿Qué ley garantiza el derecho de todos los estudiantes argentinos a recibir ESI en la escuela?',opts:['Ley 26.061','Ley 26.150','Ley 26.904','Ley 27.590'],ans:1},
+{mod:'m4',q:'La Resolución CFE Nº 419/22 incorpora a la ESI de manera explícita…',opts:['El uso obligatorio de redes sociales en clase','La ciudadanía digital y la violencia digital como contenidos','La prohibición de celulares en escuelas','El acceso gratuito a Internet en escuelas'],ans:1},
+{mod:'m4',q:'¿Qué es el sexting?',opts:['Un tipo de spam por SMS','El envío consensuado o no de imágenes o mensajes de contenido sexual por medios digitales','Una red social para adultos','Un delito tipificado en el Código Civil'],ans:1},
+{mod:'m4',q:'El grooming es…',opts:['Una técnica de maquillaje digital','El acoso y manipulación de un adulto hacia un menor a través de plataformas digitales con fines sexuales','Un tipo de malware','Una forma de cyberbullying entre pares'],ans:1},
+{mod:'m4',q:'¿Qué diferencia al sexting consensuado del no consensuado?',opts:['No hay diferencia legal','El consentimiento: si la otra persona participó libremente y sigue estando de acuerdo','La plataforma donde se envía','La edad de quien lo envía'],ans:1},
+{mod:'m4',q:'¿Qué es la violencia digital de género?',opts:['Cualquier uso de tecnología por parte de una mujer','Toda forma de violencia ejercida mediante herramientas digitales por razones de género','Solo la difusión de fotos íntimas','El acoso en videojuegos únicamente'],ans:1},
+{mod:'m4',q:'La Ley Mica Ortega (27.590) crea el…',opts:['Registro Nacional de Delitos Informáticos','Programa Nacional de Prevención del Grooming','Sistema de Alerta Temprana de Cyberbullying','Observatorio de Violencia Digital'],ans:1},
+{mod:'m4',q:'¿Qué ley protege integralmente los derechos de niñas, niños y adolescentes en Argentina?',opts:['Ley 26.150','Ley 26.485','Ley 26.061','Ley 26.904'],ans:2},
+{mod:'m4',q:'Si un adulto desconocido te pide fotos por privado y pide que no se lo cuentes a nadie, deberías…',opts:['Cumplir si te cae bien','Ignorarlo y no contarle a nadie','Cortarlo de inmediato y contarle a un adulto de confianza','Bloquearlo sin decirle nada a nadie'],ans:2},
+{mod:'m4',q:'¿Por qué la ESI incluye los entornos digitales?',opts:['Porque es obligatorio por ley provincial únicamente','Porque hoy el deseo, el afecto y la violencia también ocurren en pantallas','Porque los celulares causan adicción','Porque las redes sociales son peligrosas'],ans:1},
+{mod:'m4',q:'El consentimiento digital se puede revocar…',opts:['Solo si hay un contrato firmado','Nunca, una vez dado es permanente','En cualquier momento, aunque antes hayas aceptado','Solo dentro de las 24 horas de haberlo dado'],ans:2},
+{mod:'m4',q:'¿Qué es el ciberacoso o cyberbullying?',opts:['Un juego online de rol','El acoso repetido hacia una persona usando medios digitales','Un virus que roba datos personales','Una campaña de publicidad agresiva'],ans:1},
+{mod:'m4',q:'Una persona que comparte sin permiso fotos íntimas de su ex pareja puede ser imputada por…',opts:['Falta de respeto, pero no es delito','Violación a la Ley Olimpia y posibles cargos penales','Solo daño moral civil','Uso indebido de redes sociales'],ans:1},
+{mod:'m4',q:'¿Cuál de estas actitudes refleja mejor el cuidado en los vínculos digitales?',opts:['Compartir contraseñas como señal de amor y confianza','Pedir fotos íntimas para demostrar que confían','Respetar los límites del otro aunque estén enamorados','Revisar el celular de la pareja para saber si es fiel'],ans:2},
+{mod:'m4',q:'La Ley 26.485 protege contra…',opts:['El uso excesivo de pantallas','La violencia de género en todas sus formas, incluyendo la digital','El grooming únicamente','El hackeo de cuentas personales'],ans:1},
+{mod:'m4',q:'Encontrás en el celular de un amigo/a mensajes de un adulto pidiéndole fotos. ¿Qué hacés?',opts:['No te metés porque es su problema','Le recomendás que lo ignore','Lo hablás con él/ella y sugieren contarle a un adulto de confianza o llamar a la línea 102','Publicás los mensajes en redes para exponer al adulto'],ans:2},
+{mod:'m4',q:'La línea 102 en Argentina sirve para…',opts:['Reportar fallos en Internet','Denunciar delitos informáticos a la policía','Recibir orientación y protección de los derechos de niños, niñas y adolescentes','Pedir asistencia técnica del Estado'],ans:2},
+{mod:'m4',q:'¿Por qué compartir la contraseña con la pareja puede ser problemático?',opts:['Porque las contraseñas son muy largas','Porque viola términos de servicio de las apps','Porque puede usarse para controlar, vigilar o amenazar, lo que es una forma de violencia digital','Porque ralentiza los dispositivos'],ans:2},
+{mod:'m4',q:'¿Qué implica el enfoque integral de la ESI?',opts:['Solo hablar de biología y reproducción','Abordar aspectos biológicos, psicológicos, sociales, afectivos y éticos de la sexualidad','Separar a varones y mujeres en clases distintas','Enseñar solo prevención de enfermedades'],ans:1},
+{mod:'m4',q:'¿Qué es una imagen íntima en el contexto de la Ley Olimpia?',opts:['Solo fotos desnudas','Cualquier imagen o video de contenido sexual o íntimo de una persona','Solo videos grabados en privado','Imágenes publicadas voluntariamente en redes'],ans:1},
+{mod:'m4',q:'Un chico de 14 años recibe solicitud de amistad de un desconocido que dice ser de su edad, elogia todo lo que publica y le pide chatear en privado. ¿Qué señal de alerta hay?',opts:['Ninguna, es normal conocer gente online','El contacto desconocido que busca privacidad rápidamente puede ser grooming','Solo es spam publicitario','Es una señal de amistad genuina'],ans:1},
+{mod:'m4',q:'¿Qué significa que el consentimiento debe ser "informado"?',opts:['Que haya un formulario firmado','Que la persona entiende qué está aceptando, sin presión ni engaño','Que lo apruebe un adulto responsable','Que se haya dado por escrito'],ans:1},
+{mod:'m4',q:'Si alguien te amenaza con difundir fotos tuyas si no hacés lo que pide, esto se llama…',opts:['Grooming','Sextorsión','Cyberbullying','Phishing'],ans:1},
+{mod:'m4',q:'¿Por qué la violencia digital puede ser tan dañina como la presencial?',opts:['No lo es, lo digital no tiene consecuencias reales','Porque el contenido digital puede viralizarse, es permanente y llega a muchas personas','Solo es dañina si hay fotos comprometidas','Porque las redes sociales amplifican todo'],ans:1},
+{mod:'m4',q:'La Dirección de ESI de la DGCyE de Buenos Aires fue creada en…',opts:['2006','2013','2020','2022'],ans:3},
 ];
 
 // [005] CONFIG BACKEND
@@ -741,26 +773,87 @@ function buildQuestions(){
   return shuffle(chosen);
 }
 
+function getLogro(pct){
+  if(pct==null) return {medal:'',label:'',color:''};
+  if(pct===100) return {medal:'💎',label:'¡Perfecto!',color:'#00d4c8'};
+  if(pct>=87)   return {medal:'🏆',label:'Excelente',color:'#ffd700'};
+  if(pct>=75)   return {medal:'🥇',label:'Muy bien',color:'#ffab2e'};
+  if(pct>=62)   return {medal:'🥈',label:'Bien',color:'#c0c0c0'};
+  if(pct>=50)   return {medal:'🥉',label:'Regular',color:'#cd7f32'};
+  return {medal:'🔁',label:'A repasar',color:'#ff5a7a'};
+}
+
 function renderHome(){
   const scores=getLocalScores();
+  const completados=Object.keys(scores).length;
+  const totalTemas=9;
   const grid=document.getElementById('temas-grid');
-  grid.innerHTML=TEMA_DEFS.map(def=>{
+
+  // Mensaje motivacional según progreso
+  let motivMsg='';
+  if(completados===0) motivMsg='<div style="text-align:center;margin-bottom:1.5rem;font-size:.88rem;color:var(--muted)">🚀 ¡Elegí tu primer tema y arrancá!</div>';
+  else if(completados<3) motivMsg=`<div style="text-align:center;margin-bottom:1.5rem;font-size:.88rem;color:var(--c4)">🔥 ¡Buen comienzo! Llevás ${completados} de ${totalTemas} temas. ¡Seguí!</div>`;
+  else if(completados<6) motivMsg=`<div style="text-align:center;margin-bottom:1.5rem;font-size:.88rem;color:var(--c2)">⚡ ¡Vas por la mitad! ${completados} de ${totalTemas} temas completados.</div>`;
+  else if(completados<9) motivMsg=`<div style="text-align:center;margin-bottom:1.5rem;font-size:.88rem;color:var(--c3)">🎯 ¡Ya casi terminás! ${completados} de ${totalTemas} temas. ¡Un poco más!</div>`;
+  else motivMsg='<div style="text-align:center;margin-bottom:1.5rem;font-size:.88rem;color:var(--c3)">🏆 ¡Completaste todos los temas! Intentá mejorar tus puntajes.</div>';
+
+  // Barra de progreso global
+  const progPct=Math.round((completados/totalTemas)*100);
+  const progressBar=`
+    <div style="margin-bottom:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <span style="font-family:var(--fh);font-size:.8rem;font-weight:800;color:var(--text)">🗺️ Tu progreso</span>
+        <span style="font-family:var(--fh);font-size:.8rem;font-weight:800;color:var(--c4)">${completados}/${totalTemas} temas · ${progPct}%</span>
+      </div>
+      <div style="height:10px;background:var(--card2);border-radius:99px;overflow:hidden">
+        <div style="height:100%;width:${progPct}%;background:linear-gradient(90deg,var(--c2),var(--c4));border-radius:99px;transition:width .6s ease"></div>
+      </div>
+      ${completados>0?`<div style="display:flex;gap:.75rem;margin-top:.6rem;flex-wrap:wrap">
+        ${Object.entries(scores).map(([t,s])=>{
+          const p=Math.round(s/16*100);
+          const l=getLogro(p);
+          return`<span style="font-size:.75rem;color:var(--muted)">${l.medal} T.${t} <strong style="color:${l.color}">${s}/16</strong></span>`;
+        }).join('')}
+      </div>`:''}
+    </div>`;
+
+  grid.innerHTML = `
+    <div style="grid-column:1/-1">${motivMsg}${progressBar}</div>
+    ${TEMA_DEFS.map(def=>{
     const best=scores[def.id];
     const pct=best!=null?Math.round((best/16)*100):null;
+    const logro=getLogro(pct);
     const isDone=pct!=null&&pct>=60;
-    const badge=isDone
-      ?`<span class="t-badge done-badge">✓ ${pct}%</span>`
-      :(pct!=null?`<span class="t-badge" style="background:rgba(255,171,46,.15);color:var(--c4)">${pct}%</span>`:'');
-    const hi=best!=null?`<div class="hi-badge">Mejor: ${best}/16</div>`:'';
+
+    // Badge superior
+    const badge=pct!=null
+      ?`<span class="t-badge" style="background:${isDone?'rgba(81,212,110,.18)':'rgba(255,90,122,.15)'};color:${isDone?'#51d46e':'#ff5a7a'};border:1px solid ${isDone?'rgba(81,212,110,.3)':'rgba(255,90,122,.2)'}">${isDone?'✓':''} ${pct}%</span>`
+      :'';
+
+    // Bloque de logro
+    const logroBlock=best!=null?`
+      <div style="margin-top:.5rem;display:flex;align-items:center;justify-content:center;gap:.4rem;flex-wrap:wrap">
+        <span style="font-size:1.3rem">${logro.medal}</span>
+        <div>
+          <div style="font-family:var(--fh);font-size:.75rem;font-weight:800;color:${logro.color}">${logro.label}</div>
+          <div style="font-size:.68rem;color:var(--muted)">${best}/16 pts · ${pct}%</div>
+        </div>
+      </div>`
+      :`<div style="margin-top:.5rem;font-size:.72rem;color:var(--muted)">Sin intentos aún</div>`;
+
+    // Estrellitas
+    const starsBlock=pct!=null?`<div style="font-size:.9rem;letter-spacing:.1em;margin-top:.2rem">${pct>=87?'⭐⭐⭐':pct>=62?'⭐⭐':'⭐'}</div>`:'';
+
     return `<div class="tema-card ${def.color}" onclick="startQuiz('${def.id}')">
       ${badge}
       <div class="t-icon">${def.icon}</div>
       <div class="t-label">${def.label}</div>
-      <div class="t-sub">16 preguntas · 3 submódulos</div>
-      ${hi}
+      <div class="t-sub">16 preguntas · 4 submódulos</div>
+      ${logroBlock}
+      ${starsBlock}
       <button class="print-btn" onclick="event.stopPropagation();openPrint('${def.id}')">🖨️ Imprimir</button>
     </div>`;
-  }).join('');
+  }).join('')}`;
 }
 
 let quizState=null;
@@ -813,8 +906,10 @@ function selectAnswer(selectedIdx,correctIdx){
   if(isCorrect){quizState.score++;quizState.byMod[q.mod].correct++;}
   const fb=document.getElementById('feedback');
   fb.classList.add('show',isCorrect?'ok':'ko');
-  fb.textContent=isCorrect?'✅ ¡Correcto!':`❌ La respuesta correcta era: ${String.fromCharCode(65+correctIdx)}`;
-  if(isCorrect&&quizState.score>0&&quizState.score%5===0)showCombo();
+  fb.textContent=isCorrect
+    ?(['✅ ¡Correcto! 🎯','✅ ¡Exacto! 🌟','✅ ¡Muy bien! 💪','✅ ¡Perfecto! 🔥'][Math.floor(Math.random()*4)])
+    :`❌ La respuesta correcta era: ${String.fromCharCode(65+correctIdx)}`;
+  if(isCorrect&&quizState.score>0&&(quizState.score%5===0||quizState.score===13||quizState.score===16))showCombo(quizState.score);
   const nb=document.createElement('button');
   nb.className='next-btn';
   nb.textContent=(quizState.questions.length-quizState.idx-1)>0?'Siguiente →':'Ver resultado';
@@ -849,11 +944,20 @@ function nextQuestion(){
   }
 }
 
-function showCombo(){
-  const msgs=['🔥 En racha!','⚡ Combo!','💥 ¡Imparable!','🚀 ¡Excelente!'];
+function showCombo(score){
+  const combos={
+    5: ['🔥 ¡5 seguidas!','⚡ ¡Imparable!','🚀 ¡En llamas!'],
+    10:['💥 ¡10 correctas!','🎯 ¡Crack total!','🌟 ¡Sos una máquina!'],
+    13:['👑 ¡13/16! ¡Excelente!','🏆 ¡Casi perfecto!','💎 ¡Nivel pro!'],
+    16:['🎊 ¡PERFECTO! 16/16','💯 ¡Puntaje máximo!','🥇 ¡Imbatible!'],
+  };
+  const keys=Object.keys(combos).map(Number).filter(k=>k<=score);
+  const msgs=combos[keys[keys.length-1]]||['🔥 ¡En racha!','⚡ Combo!','💥 ¡Seguí así!'];
+  const txt=msgs[Math.floor(Math.random()*msgs.length)];
   const el=document.createElement('div');
-  el.className='combo-flash';el.style.color='var(--c4)';
-  el.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  el.className='combo-flash';
+  el.style.color=score>=13?'var(--c1)':score>=10?'var(--c3)':'var(--c4)';
+  el.textContent=txt;
   document.body.appendChild(el);
   setTimeout(()=>el.remove(),900);
 }
@@ -866,12 +970,31 @@ async function showResult(){
   saveLocalScore(temaId,score);
   renderHome();
 
-  let emoji,title,stars,msg;
-  if(pct>=0.875){emoji='🏆';title='¡Excelente!';stars='⭐⭐⭐';msg='Dominás los contenidos del Módulo 2.';}
-  else if(pct>=0.75){emoji='🎉';title='¡Muy bien!';stars='⭐⭐⭐';msg='Gran performance. Repasá los errores para mejorar.';}
-  else if(pct>=0.625){emoji='👍';title='Bien';stars='⭐⭐';msg='Buen trabajo, pero hay temas para repasar.';}
-  else if(pct>=0.5){emoji='📖';title='Regular';stars='⭐⭐';msg='La mitad bien. Recomendamos repasar los tres submódulos.';}
-  else{emoji='🔁';title='A repasar';stars='⭐';msg='Volvé a repasar el módulo y volvé a intentarlo.';}
+  let emoji,title,stars,msg,logroNuevo='';
+  const logro=getLogro(pct*100);
+  const scores2=getLocalScores();
+  const prevBest2=scores2[temaId];
+  const esMejora=prevBest2==null||(score>prevBest2);
+  const esPerfecto=score===16;
+
+  if(esPerfecto){emoji='💎';title='¡PERFECTO! 16/16';stars='🌟🌟🌟';msg='¡Puntaje máximo! Sos una leyenda de NTICx. 🏆';}
+  else if(pct>=0.875){emoji='🏆';title='¡Excelente!';stars='⭐⭐⭐';msg='Dominás los contenidos del Módulo 2. ¡Seguí así! 🔥';}
+  else if(pct>=0.75){emoji='🎉';title='¡Muy bien!';stars='⭐⭐⭐';msg='Gran performance. Repasá los errores y vas a llegar al top. 💪';}
+  else if(pct>=0.625){emoji='👍';title='¡Bien!';stars='⭐⭐';msg='Buen trabajo. Hay temas para repasar y mejorar. 📚';}
+  else if(pct>=0.5){emoji='📖';title='Sigue practicando';stars='⭐⭐';msg='La mitad bien. ¡Volvé a intentarlo, vas a mejorar! 💡';}
+  else{emoji='🔁';title='¡A repasar!';stars='⭐';msg='Repasá el módulo y volvé a intentarlo. ¡Cada intento cuenta! 🚀';}
+
+  if(esMejora&&prevBest2!=null){
+    logroNuevo=`<div style="background:linear-gradient(135deg,rgba(139,109,255,.15),rgba(255,171,46,.1));border:1px solid rgba(139,109,255,.3);border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;text-align:center">
+      <div style="font-size:1.5rem">🆕 ¡Nuevo récord personal!</div>
+      <div style="font-family:var(--fh);font-size:.85rem;font-weight:800;color:var(--c2);margin-top:.2rem">${prevBest2} → ${score} pts 📈</div>
+    </div>`;
+  } else if(prevBest2==null){
+    logroNuevo=`<div style="background:rgba(81,212,110,.08);border:1px solid rgba(81,212,110,.2);border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;text-align:center">
+      <div style="font-size:1.3rem">🎖️ ¡Primer intento registrado!</div>
+      <div style="font-family:var(--fh);font-size:.82rem;font-weight:800;color:var(--c3);margin-top:.2rem">${logro.medal} ${logro.label}</div>
+    </div>`;
+  }
 
   const incorrectas=questions.filter((_,i)=>!quizState.answers[i]);
   const reviewHtml=incorrectas.length>0?`
@@ -894,7 +1017,6 @@ async function showResult(){
   const best=getLocalScores()[temaId]||score;
   const scoreData={tema:temaId,puntaje:score,total,fecha:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'})};
 
-  // determinar mensaje de guardado
   let saveHtml='';
   if(currentUser){
     await uploadScore(scoreData);
@@ -903,7 +1025,6 @@ async function showResult(){
     saveHtml=`<div style="background:rgba(255,171,46,.08);border:1px solid rgba(255,171,46,.2);border-radius:8px;padding:.6rem .9rem;font-size:.82rem;color:var(--c4);margin-bottom:1rem;cursor:pointer" onclick="openAuth('login')">⚠️ Sesión no iniciada — <u>ingresá para guardar este puntaje</u></div>`;
   }else{
     saveHtml=`<div style="background:rgba(139,109,255,.08);border:1px solid rgba(139,109,255,.25);border-radius:8px;padding:.6rem .9rem;font-size:.82rem;color:var(--c2);margin-bottom:1rem;cursor:pointer" onclick="openAuthForScore(${JSON.stringify(scoreData).replace(/"/g,'&quot;')})">📋 <u>Creá tu cuenta para guardar este puntaje en el ranking</u></div>`;
-    // disparar modal automático (solo si no lo hizo antes)
     setTimeout(()=>openAuthForScore(scoreData),800);
   }
 
@@ -913,6 +1034,7 @@ async function showResult(){
     <div class="score-display"><span class="score-num">${score}</span><span class="score-den"> / ${total}</span></div>
     <div class="stars">${stars}</div>
     <div class="result-msg">${msg}</div>
+    ${logroNuevo}
     <div class="best-row">
       <div class="best-chip"><strong>${score}</strong>Este intento</div>
       <div class="best-chip"><strong>${best}</strong>Mejor puntaje</div>
@@ -923,10 +1045,10 @@ async function showResult(){
     ${saveHtml}
     <div class="result-btns">
       <button class="btn-retry" onclick="startQuiz('${temaId}')">🔄 Reintentar</button>
-      <button class="btn-home" onclick="goHome()">🏠 Elegir tema</button>
+      <button class="btn-home" onclick="goHome()">🏠 Ver mis logros</button>
     </div>`;
   showScreen('result');
-  if(pct>=0.75)launchConfetti();
+  if(pct>=0.625)launchConfetti(pct);
 }
 
 // [008] RANKING LOGIC
@@ -1173,16 +1295,28 @@ function toggleAlumno(id){
 }
 
 // [009] PRINT / PDF
-function launchConfetti(){
+function launchConfetti(pct){
   const c=document.getElementById('confetti-container');
-  const cols=['#00d4c8','#8b6dff','#51d46e','#ffab2e','#ff5a7a','#fff'];
-  for(let i=0;i<120;i++){
+  const cols=['#00d4c8','#8b6dff','#51d46e','#ffab2e','#ff5a7a','#fff','#ffd700'];
+  const count=pct>=1?200:pct>=0.875?150:pct>=0.75?100:60;
+  for(let i=0;i<count;i++){
     const el=document.createElement('div');el.className='confetti-piece';
-    const s=Math.random()*9+4;
-    el.style.cssText=`left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};width:${s}px;height:${s}px;animation-delay:${Math.random()*1.8}s;animation-duration:${Math.random()*2+2.5}s;border-radius:${Math.random()>.5?'50%':'2px'};`;
+    const s=Math.random()*10+4;
+    el.style.cssText=`left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};width:${s}px;height:${s}px;animation-delay:${Math.random()*2}s;animation-duration:${Math.random()*2+2.5}s;border-radius:${Math.random()>.5?'50%':'2px'};`;
     c.appendChild(el);
   }
-  setTimeout(()=>{c.innerHTML='';},7000);
+  // Para puntaje perfecto, lanzar segunda oleada
+  if(pct>=1){
+    setTimeout(()=>{
+      for(let i=0;i<100;i++){
+        const el=document.createElement('div');el.className='confetti-piece';
+        const s=Math.random()*12+5;
+        el.style.cssText=`left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};width:${s}px;height:${s}px;animation-delay:${Math.random()*1}s;animation-duration:${Math.random()*2+2}s;border-radius:${Math.random()>.5?'50%':'3px'};`;
+        c.appendChild(el);
+      }
+    },1500);
+  }
+  setTimeout(()=>{c.innerHTML='';},9000);
 }
 
 const LETTERS=['A','B','C','D'];
