@@ -904,15 +904,58 @@ function selectAnswer(selectedIdx,correctIdx){
   quizState.answers.push(isCorrect);
   quizState.byMod[q.mod].total++;
   if(isCorrect){quizState.score++;quizState.byMod[q.mod].correct++;}
+
+  // Calcular racha actual
+  const answers=quizState.answers;
+  let racha=0;
+  for(let i=answers.length-1;i>=0;i--){if(answers[i])racha++;else break;}
+
+  // Mensajes por respuesta correcta según racha
+  const msgsOk=[
+    ['✅ ¡Correcto! 🎯','✅ ¡Exacto! 💡','✅ ¡Bien! 👍','✅ ¡Eso es! ✨'],       // racha 1
+    ['🔥 ¡Dos seguidas!','⚡ ¡Racha de 2! 💪','🎯 ¡Dos en fila! 🙌'],             // racha 2
+    ['🔥🔥 ¡Tres seguidas! 🎯','💥 ¡Racha de 3! ¡Vas bien!','🚀 ¡3 en fila! 🔥'], // racha 3
+    ['🌟 ¡Cuatro seguidas! ¡Imparable!','💪 ¡Racha de 4! ¡Seguí así!'],            // racha 4
+    ['⚡ ¡CINCO SEGUIDAS! 🏆','🔥🔥🔥 ¡Racha de 5! ¡Máquina!'],                   // racha 5+
+  ];
+  const msgIdx=Math.min(racha-1,4);
+  const pool=msgsOk[msgIdx]||msgsOk[0];
+  const msgOk=pool[Math.floor(Math.random()*pool.length)];
+
+  // Mensajes por respuesta incorrecta con aliento
+  const msgsKo=[
+    '❌ No era esa — ¡la próxima va! 💪',
+    '❌ Casi, pero no — ¡seguimos! 🚀',
+    '❌ Esa no era — repasá ese tema 📚',
+    '❌ Error, pero aprendemos de eso 🧠',
+    '❌ No te bajes — ¡todavía podés remontar! 🔥',
+  ];
+  const msgKo=msgsKo[Math.floor(Math.random()*msgsKo.length)];
+
+  // Contexto de progreso
+  const totalQ=quizState.questions.length;
+  const respondidas=quizState.idx+1;
+  const restantes=totalQ-respondidas;
+  let progMsg='';
+  if(restantes===0) progMsg='🏁 ¡Última pregunta!';
+  else if(restantes===1) progMsg='📌 Falta solo 1 pregunta más';
+  else if(respondidas===Math.floor(totalQ/2)) progMsg='⚡ ¡Mitad del camino!';
+  else if(isCorrect&&racha>=3) progMsg=`🔥 Racha activa: ${racha} correctas seguidas`;
+
   const fb=document.getElementById('feedback');
   fb.classList.add('show',isCorrect?'ok':'ko');
-  fb.textContent=isCorrect
-    ?(['✅ ¡Correcto! 🎯','✅ ¡Exacto! 🌟','✅ ¡Muy bien! 💪','✅ ¡Perfecto! 🔥'][Math.floor(Math.random()*4)])
-    :`❌ La respuesta correcta era: ${String.fromCharCode(65+correctIdx)}`;
-  if(isCorrect&&quizState.score>0&&(quizState.score%5===0||quizState.score===13||quizState.score===16))showCombo(quizState.score);
+  fb.innerHTML=`
+    <div style="font-weight:700;font-size:.92rem">${isCorrect?msgOk:msgKo}</div>
+    ${!isCorrect?`<div style="margin-top:.3rem;font-size:.82rem;opacity:.85">La respuesta correcta era: <strong>${String.fromCharCode(65+correctIdx)}</strong></div>`:''}
+    ${progMsg?`<div style="margin-top:.35rem;font-size:.78rem;opacity:.75">${progMsg}</div>`:''}
+    <div style="margin-top:.35rem;font-size:.75rem;opacity:.65">Puntaje: ${quizState.score} pts · Pregunta ${respondidas}/${totalQ}</div>
+  `;
+
+  if(isCorrect&&(racha%5===0||racha===3||quizState.score===13||quizState.score===16))showCombo(quizState.score);
+
   const nb=document.createElement('button');
   nb.className='next-btn';
-  nb.textContent=(quizState.questions.length-quizState.idx-1)>0?'Siguiente →':'Ver resultado';
+  nb.textContent=restantes>0?'Siguiente →':'Ver resultado 🏁';
   nb.onclick=nextQuestion;
   fb.after(nb);
 }
