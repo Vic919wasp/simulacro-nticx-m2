@@ -822,32 +822,225 @@ function mostrarBuhoFlotante(q, idx, total){
   const prev=document.getElementById('buho-flotante');
   if(prev)prev.remove();
   const cfg=BUHO_CONFIG[q.mod];
-  // Usar hint específico de la pregunta
   const pista=q.hint||cfg.pistas[Math.floor(Math.random()*cfg.pistas.length)];
+
+  // Posiciones aleatorias — evitando el centro para no tapar la pregunta
+  const isMobile=window.innerWidth<600;
+  const posiciones=isMobile
+    ?[ // Mobile: solo abajo izq/der (arriba tapa el quiz)
+        {bottom:'1rem',right:'1rem',left:'auto',top:'auto',align:'flex-end'},
+        {bottom:'1rem',left:'1rem',right:'auto',top:'auto',align:'flex-start'},
+      ]
+    :[ // Desktop: las 4 esquinas
+        {bottom:'1.25rem',right:'1.25rem',left:'auto',top:'auto',align:'flex-end'},
+        {bottom:'1.25rem',left:'1.25rem',right:'auto',top:'auto',align:'flex-start'},
+        {top:'5rem',right:'1.25rem',left:'auto',bottom:'auto',align:'flex-end'},
+        {top:'5rem',left:'1.25rem',right:'auto',bottom:'auto',align:'flex-start'},
+      ];
+  const pos=posiciones[Math.floor(Math.random()*posiciones.length)];
+
+  // Burbuja se abre hacia adentro según la posición
+  const burbujaAlign=pos.align==='flex-end'?'flex-end':'flex-start';
+  const maxW=isMobile?'calc(100vw - 2rem)':'290px';
+
   const wrap=document.createElement('div');
   wrap.id='buho-flotante';
-  wrap.style.cssText=`position:fixed;bottom:1.25rem;right:1.25rem;z-index:6000;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem`;
+  wrap.style.cssText=`position:fixed;bottom:${pos.bottom||'auto'};top:${pos.top||'auto'};right:${pos.right||'auto'};left:${pos.left||'auto'};z-index:6000;display:flex;flex-direction:column;align-items:${pos.align};gap:.5rem;max-width:${maxW}`;
+
   wrap.innerHTML=`
-    <div id="buho-burbuja" style="display:none;background:var(--card);border:1.5px solid ${cfg.color};border-radius:16px;padding:1rem 1.1rem;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:slideUpBuho .3s ease">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
-        <span style="font-family:var(--fh);font-size:.78rem;font-weight:800;color:${cfg.color}">${cfg.badge} Búho Sabio</span>
-        <span onclick="toggleBuho()" style="cursor:pointer;color:var(--muted);font-size:.8rem;padding:.1rem .4rem">✕</span>
+    <div id="buho-burbuja" style="display:block;background:var(--card);border:1.5px solid ${cfg.color};border-radius:16px;padding:.85rem 1rem;max-width:${maxW};width:${isMobile?'calc(100vw - 2rem)':'290px'};box-shadow:0 8px 32px rgba(0,0,0,.4);animation:slideUpBuho .4s cubic-bezier(.34,1.56,.64,1)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem">
+        <span style="font-family:var(--fh);font-size:.76rem;font-weight:800;color:${cfg.color}">🦉 Búho Sabio</span>
+        <span onclick="toggleBuho()" style="cursor:pointer;color:var(--muted);font-size:.8rem;padding:.1rem .45rem;border-radius:99px;background:var(--card2)">✕</span>
       </div>
-      <div style="font-size:.85rem;line-height:1.5;color:var(--text);margin-bottom:.75rem">${pista}</div>
+      <div style="font-size:${isMobile?'.8rem':'.85rem'};line-height:1.5;color:var(--text);margin-bottom:.6rem">${pista}</div>
       <a href="${cfg.url}" target="_blank" rel="noopener"
-         style="display:flex;align-items:center;gap:.35rem;font-family:var(--fh);font-size:.75rem;font-weight:700;color:${cfg.color};text-decoration:none;padding:.4rem .7rem;background:var(--card2);border-radius:99px;border:1px solid ${cfg.color}33;width:fit-content">
-        📖 Ver contenido del módulo ↗
+         style="display:flex;align-items:center;gap:.3rem;font-family:var(--fh);font-size:.72rem;font-weight:700;color:${cfg.color};text-decoration:none;padding:.35rem .65rem;background:var(--card2);border-radius:99px;border:1px solid ${cfg.color}33;width:fit-content">
+        📖 Ver módulo ↗
       </a>
     </div>
     <div onclick="toggleBuho()" id="buho-chip"
-         style="background:var(--card);border:2px solid ${cfg.color};border-radius:99px;padding:.5rem 1rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.35);animation:buhoEntrada .4s cubic-bezier(.34,1.56,.64,1)">
-      <span style="font-size:1.6rem;animation:buhoFloat 2.5s ease-in-out infinite">🦉</span>
+         style="background:var(--card);border:2px solid ${cfg.color};border-radius:99px;padding:.45rem .85rem;display:flex;align-items:center;gap:.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.35);animation:buhoEntrada .4s cubic-bezier(.34,1.56,.64,1)">
+      <span style="font-size:${isMobile?'1.3rem':'1.6rem'};animation:buhoFloat 2.5s ease-in-out infinite">🦉</span>
       <div>
-        <div style="font-family:var(--fh);font-size:.75rem;font-weight:800;color:${cfg.color}">Búho Sabio</div>
-        <div style="font-size:.65rem;color:var(--muted)">¡Tengo una pista! 💡</div>
+        <div style="font-family:var(--fh);font-size:.72rem;font-weight:800;color:${cfg.color}">Búho Sabio</div>
+        <div style="font-size:.62rem;color:var(--muted)">¡Pista! 💡</div>
       </div>
     </div>`;
+
   document.body.appendChild(wrap);
+  playBuhoSound();
+}
+
+function playBuhoSound(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const sounds=[
+      playChime,playPowerUp,playMagic,playNotif,playBloop,playLevelUp,playCoin,playQuestion,
+      playPortal,playStarGet,playWarp,playEcho,playDrumRoll,playGlitch,playFanfare,playZap
+    ];
+    sounds[Math.floor(Math.random()*sounds.length)](ctx);
+  }catch(e){}
+}
+// 🔔 Campanitas
+function playChime(ctx){const t=ctx.currentTime;[[1318,.125],[1047,.11],[1175,.10],[1568,.09]].forEach(([f,v],i)=>{bell(ctx,t+i*.22,f,v);});}
+// ⚡ Power-up
+function playPowerUp(ctx){const t=ctx.currentTime;[523,659,784,1047].forEach((f,i)=>{blip(ctx,t+i*.09,f,.08,'square');});}
+// ✨ Magia
+function playMagic(ctx){const t=ctx.currentTime;[1568,1319,1047,1319,1568].forEach((f,i)=>{blip(ctx,t+i*.07,f,.06,'sine');});}
+// 📳 Notif
+function playNotif(ctx){const t=ctx.currentTime;blip(ctx,t,880,.10,'sine');blip(ctx,t+.15,1047,.08,'sine');}
+// 🎮 Bloop retro
+function playBloop(ctx){const t=ctx.currentTime;const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='square';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(400,t+.15);g.gain.setValueAtTime(.08,t);g.gain.linearRampToValueAtTime(0,t+.18);o.start(t);o.stop(t+.2);}
+// 🏆 Level up
+function playLevelUp(ctx){const t=ctx.currentTime;[523,659,784,880,1047].forEach((f,i)=>{blip(ctx,t+i*.08,f,.07,'triangle');});}
+// 🪙 Moneda
+function playCoin(ctx){const t=ctx.currentTime;blip(ctx,t,1047,.09,'square');blip(ctx,t+.07,1319,.07,'square');}
+// ❓ Misterio
+function playQuestion(ctx){const t=ctx.currentTime;[784,880,784,659,784].forEach((f,i)=>{blip(ctx,t+i*.07,f,.06,'sine');});}
+
+// 🌀 Portal con eco
+function playPortal(ctx){
+  const t=ctx.currentTime;
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  const d=ctx.createDelay(.18),fb=ctx.createGain();fb.gain.value=.45;
+  o.connect(g);g.connect(d);g.connect(ctx.destination);
+  d.connect(fb);fb.connect(d);d.connect(ctx.destination);
+  o.type='sine';
+  o.frequency.setValueAtTime(200,t);
+  o.frequency.exponentialRampToValueAtTime(1200,t+.4);
+  g.gain.setValueAtTime(.10,t);g.gain.linearRampToValueAtTime(0,t+.45);
+  o.start(t);o.stop(t+1.2);
+}
+
+// ⭐ Estrella con delay
+function playStarGet(ctx){
+  const t=ctx.currentTime;
+  const d=ctx.createDelay(.12),fb=ctx.createGain();fb.gain.value=.35;
+  d.connect(fb);fb.connect(d);d.connect(ctx.destination);
+  [1047,1319,1568,2093].forEach((f,i)=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(d);g.connect(ctx.destination);
+    o.type='triangle';o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+i*.09);
+    g.gain.linearRampToValueAtTime(.08,t+i*.09+.01);
+    g.gain.linearRampToValueAtTime(0,t+i*.09+.12);
+    o.start(t+i*.09);o.stop(t+i*.09+.5);
+  });
+}
+
+// 🌊 Warp descendente con reverb
+function playWarp(ctx){
+  const t=ctx.currentTime;
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  const d=ctx.createDelay(.25),fb=ctx.createGain();fb.gain.value=.3;
+  o.connect(g);g.connect(d);g.connect(ctx.destination);
+  d.connect(fb);fb.connect(d);d.connect(ctx.destination);
+  o.type='sawtooth';
+  o.frequency.setValueAtTime(900,t);
+  o.frequency.exponentialRampToValueAtTime(80,t+.35);
+  g.gain.setValueAtTime(.07,t);g.gain.linearRampToValueAtTime(0,t+.38);
+  o.start(t);o.stop(t+1.0);
+}
+
+// 📣 Echo con delay largo
+function playEcho(ctx){
+  const t=ctx.currentTime;
+  const d=ctx.createDelay(.22),fb=ctx.createGain();fb.gain.value=.5;
+  d.connect(fb);fb.connect(d);d.connect(ctx.destination);
+  [880,1047,1319].forEach((f,i)=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(d);g.connect(ctx.destination);
+    o.type='sine';o.frequency.value=f;
+    const st=t+i*.14;
+    g.gain.setValueAtTime(0,st);
+    g.gain.linearRampToValueAtTime(.09,st+.01);
+    g.gain.exponentialRampToValueAtTime(.001,st+.5);
+    o.start(st);o.stop(st+1.0);
+  });
+}
+
+// 🥁 Drum roll con remate
+function playDrumRoll(ctx){
+  const t=ctx.currentTime;
+  for(let i=0;i<6;i++){
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='square';o.frequency.value=80+i*15;
+    const st=t+i*.055;
+    g.gain.setValueAtTime(.07,st);g.gain.linearRampToValueAtTime(0,st+.045);
+    o.start(st);o.stop(st+.05);
+  }
+  blip(ctx,t+.38,523,.09,'square');
+  blip(ctx,t+.46,784,.08,'square');
+}
+
+// ⚡ Glitch digital
+function playGlitch(ctx){
+  const t=ctx.currentTime;
+  [400,200,600,150,800,300,1000,500].forEach((f,i)=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type=i%2===0?'square':'sawtooth';o.frequency.value=f;
+    const st=t+i*.045;
+    g.gain.setValueAtTime(.06,st);g.gain.linearRampToValueAtTime(0,st+.038);
+    o.start(st);o.stop(st+.05);
+  });
+}
+
+// 🎺 Fanfare con delay
+function playFanfare(ctx){
+  const t=ctx.currentTime;
+  const d=ctx.createDelay(.08),fb=ctx.createGain();fb.gain.value=.2;
+  d.connect(fb);fb.connect(d);d.connect(ctx.destination);
+  [[523,.15],[659,.10],[784,.10],[1047,.30]].forEach(([f,dur],i)=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(d);g.connect(ctx.destination);
+    o.type='triangle';o.frequency.value=f;
+    const st=t+[0,.12,.22,.32][i];
+    g.gain.setValueAtTime(0,st);
+    g.gain.linearRampToValueAtTime(.08,st+.02);
+    g.gain.linearRampToValueAtTime(0,st+dur);
+    o.start(st);o.stop(st+dur+.1);
+  });
+}
+
+// ⚡ Zap eléctrico con eco
+function playZap(ctx){
+  const t=ctx.currentTime;
+  const d=ctx.createDelay(.15),fb=ctx.createGain();fb.gain.value=.4;
+  d.connect(fb);fb.connect(d);d.connect(ctx.destination);
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(d);g.connect(ctx.destination);
+  o.type='sawtooth';
+  o.frequency.setValueAtTime(1200,t);
+  o.frequency.exponentialRampToValueAtTime(200,t+.12);
+  o.frequency.exponentialRampToValueAtTime(800,t+.20);
+  o.frequency.exponentialRampToValueAtTime(100,t+.28);
+  g.gain.setValueAtTime(.09,t);g.gain.linearRampToValueAtTime(0,t+.32);
+  o.start(t);o.stop(t+1.0);
+}
+
+// ─── helpers ───────────────────────────────────────────
+function bell(ctx,startTime,freq,vol=0.12){
+  const o1=ctx.createOscillator(),o2=ctx.createOscillator(),g=ctx.createGain();
+  o1.connect(g);o2.connect(g);g.connect(ctx.destination);
+  o1.type='sine';o2.type='sine';
+  o1.frequency.value=freq;o2.frequency.value=freq*2.756;
+  g.gain.setValueAtTime(0,startTime);
+  g.gain.linearRampToValueAtTime(vol,startTime+.01);
+  g.gain.exponentialRampToValueAtTime(.001,startTime+1.4);
+  o1.start(startTime);o1.stop(startTime+1.5);
+  o2.start(startTime);o2.stop(startTime+1.5);
+}
+function blip(ctx,startTime,freq,vol=0.08,type='sine'){
+  const osc=ctx.createOscillator(),gain=ctx.createGain();
+  osc.connect(gain);gain.connect(ctx.destination);
+  osc.type=type;osc.frequency.value=freq;
+  gain.gain.setValueAtTime(0,startTime);
+  gain.gain.linearRampToValueAtTime(vol,startTime+.01);
+  gain.gain.linearRampToValueAtTime(0,startTime+.09);
+  osc.start(startTime);osc.stop(startTime+.12);
 }
 
 function toggleBuho(){
